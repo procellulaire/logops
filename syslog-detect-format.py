@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#
 # SYSLOG Detector by Fernando Cabal
 # Try to detet the format of the syslog v0.1 
 # TO DO :  Provie information that can be used to configure SIEM and log analysis tools.
