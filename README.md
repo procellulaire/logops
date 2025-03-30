@@ -3,6 +3,8 @@ Mastering syslog , events log, windows logs, applications logs, clopud system lo
 
 
 🔹 What's Inside?
+
+
 ✅ Common syslog formats (RFC 3164, RFC 5424, and beyond)
 
 ✅ Configuration snippets for syslog daemons (rsyslog, syslog-ng, syslogd)
