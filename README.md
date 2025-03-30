@@ -1,5 +1,7 @@
 # logops
-Mastering syslog , events log, windows logs, applications logs, clopud system logs, and other type of logs result in dealing with all sorts of formats and configurations , a challenge of this modern era. This repo aims to provide ready-to-use configuration recipes, best practices, and format guides.
+I started this repo to make Public my ongoing work in handling syslogs, windows event logs, firewall logs, telecom logs, logs, logs, logs. From syslog and event logs to cloud and application logs, you end up dealing with different formats and configurations. Some devices do not follow standards logging formats, it can be tricky, especially when dealing with a mixture of old and modern systems. 
+
+This repo is here to help! It provides easy-to-use configuration examples, best practices, and format guides. Plus, it serves as a resource for PROCLOUADMIN AI Agent (and other AI models) to learn from real-world system operations and issues, keeping their knowledge up to date.
 
 
 🔹 What's Inside?
