@@ -1,0 +1,142 @@
+How to Use:
+
+Save the updated script as a Python file (e.g., cisco_syslog_parser.py).
+Run the script from your terminal: python cisco_syslog_parser.py
+Enter the path to your Cisco syslog file when prompted.
+Enter the desired path for the output CSV file when prompted.
+The script will then attempt to detect the syslog format, parse the messages, display a sample in a table, and write the full parsed data to the specified CSV file. The CSV file will have a header row based on the detected format's structure, and each subsequent row will contain the parsed fields from a syslog message
+
+
+import re
+from tabulate import tabulate
+import csv
+
+def detect_cisco_syslog_format(log_lines):
+    """
+    Detects the Cisco syslog format from the first few lines of a log file.
+
+    Args:
+        log_lines: A list of strings, where each string is a line from the log file.
+
+    Returns:
+        A tuple containing the format name (string), format structure (list of field names),
+        and the compiled regex pattern (re.Pattern object), or None if no format is detected.
+    """
+    formats =,
+            "pattern": re.compile(r"<(\d+)>(\w{3}\s+\d+\s+\d{2}:\d{2}:\d{2})\s+([\w\d\.-]+)\s+%(.*)")
+        },
+        {
+            "name": "Cisco IOS Format",
+            "structure":,
+            "pattern": re.compile(r"<(\d+)>: %([\w-]+)-(\d)-([\w_]+): (.*)")
+        },
+        {
+            "name": "Cisco ASA Format",
+            "structure":,
+            "pattern": re.compile(r"%ASA-(\d)-(\d+): (.*)")
+        },
+        {
+            "name": "Cisco NX-OS Format (Likely)",
+            "structure":,
+            "pattern": re.compile(r"<(\d+)>:(\w{3}\s+\d+\s+\d{2}:\d{2}:\d{2}\.\d+\s+UTC): %([\w-]+)-(\d)-([\w_]+): (.*)")
+        },
+        {
+            "name": "RFC 5424 Format",
+            "structure":,
+            "pattern": re.compile(r"<(\d+)>1\s+([^\s]+)\s+([\w\d\.-]+)\s+([\w\d\-\.]+|-)\s+([\w\d\-\.]+|-)\s+([\w\d\-\.]+|-)\s+((?:\[.*?\]\s*)?)(.*)")
+        }
+    ]
+
+    for line in log_lines[:5]:
+        for fmt in formats:
+            match = fmt["pattern"].match(line)
+            if match:
+                return fmt["name"], fmt["structure"], fmt["pattern"]
+    return None, None, None
+
+def parse_syslog_message(log_line, format_name, format_structure, pattern):
+    """
+    Parses a single syslog message line based on the detected format.
+
+    Args:
+        log_line: A string representing a single syslog message.
+        format_name: The name of the detected syslog format.
+        format_structure: A list of field names for the format.
+        pattern: The compiled regex pattern for the format.
+
+    Returns:
+        A dictionary containing the parsed fields and their values, or None if parsing fails.
+    """
+    match = pattern.match(log_line)
+    if match:
+        if format_name == "RFC 3164 with Cisco Extensions":
+            return dict(zip(format_structure, match.groups()))
+        elif format_name == "Cisco IOS Format":
+            return dict(zip(format_structure, match.groups()))
+        elif format_name == "Cisco ASA Format":
+            return {"ASA": "ASA", "SEVERITY_LEVEL": match.group(1), "SYSLOG_ID": match.group(2), "LOG_MESSAGE": match.group(3)}
+        elif format_name == "Cisco NX-OS Format (Likely)":
+            return dict(zip(format_structure, match.groups()))
+        elif format_name == "RFC 5424 Format":
+            groups = match.groups()
+            parsed_data = dict(zip(format_structure[:-1], groups[:-1]))
+            structured_data = groups[-2]
+            msg = groups[-1].strip()
+            parsed_data = structured_data if structured_data else "-"
+            parsed_data = msg if msg else "-"
+            return parsed_data
+    return None
+
+def main():
+    log_file_path = input("Enter the path to the syslog file: ")
+    output_csv_path = input("Enter the path for the output CSV file: ")
+
+    try:
+        with open(log_file_path, 'r') as f:
+            log_lines = f.readlines()
+    except FileNotFoundError:
+        print(f"Error: File not found at {log_file_path}")
+        return
+
+    if not log_lines:
+        print("Error: The log file is empty.")
+        return
+
+    detected_format, format_structure, pattern = detect_cisco_syslog_format(log_lines)
+
+    if detected_format:
+        print(f"Detected Cisco Syslog Format: {detected_format}")
+        print("Format Structure:", format_structure)
+
+        parsed_logs =
+        for line in log_lines:
+            parsed_message = parse_syslog_message(line.strip(), detected_format, format_structure, pattern)
+            if parsed_message:
+                parsed_logs.append(parsed_message)
+
+        if parsed_logs:
+            # Write to CSV file
+            try:
+                with open(output_csv_path, 'w', newline='') as csvfile:
+                    fieldnames = format_structure
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                    writer.writeheader()
+                    for log in parsed_logs:
+                        writer.writerow(log)
+                print(f"\nSuccessfully wrote parsed data to {output_csv_path}")
+
+                # Display a sample of the parsed logs in a table
+                print("\nSample of Parsed Logs:")
+                print(tabulate([log.values() for log in parsed_logs[:5]], headers=format_structure, tablefmt="grid"))
+
+            except Exception as e:
+                print(f"Error writing to CSV file: {e}")
+
+        else:
+            print("No syslog messages could be parsed in the detected format.")
+    else:
+        print("Could not automatically detect a known Cisco syslog format from the first few lines of the log file.")
+
+if __name__ == "__main__":
+    main()
