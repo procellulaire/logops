@@ -19,6 +19,8 @@ This repo is here to help! It provides easy-to-use configuration examples, best 
 
 ✅ Python Script templates
 
+✅ PowerShell Script templates
+
 ✅ Information to be used in training of project PROCLOUDADMIN AI Agent
 
 
