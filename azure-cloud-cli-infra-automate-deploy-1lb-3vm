@@ -1,0 +1,292 @@
+<#
+.SYNOPSIS
+    Creates Azure cloud infrastructure for a lab environment, including a load balancer and virtual machines.
+    Part of procloudadmin (C) tools , by Fernando Cabal   - 02 April 2025
+.DESCRIPTION
+    This script automates the deployment of a basic Azure lab environment.  It creates a resource group,
+    virtual network, subnet, network security group, load balancer, a set of virtual machines,
+    and attaches data disks to the VMs.  This script is designed to quickly set up a test or development
+    environment in Azure.
+
+.NOTES
+    * Requires the Azure PowerShell module to be installed and the user to be authenticated to Azure.
+    * The script uses variables to define the resources, making it easy to customize.
+    * The script is idempotent, meaning it can be run multiple times without creating duplicate resources.
+    * The script includes error handling and logging.
+
+.EXAMPLE
+    . .\Create-AzureLabInfrastructure.ps1 -ResourceGroupName "MyLabRG" -Location "CanadaCentral" -AdminUsername "MyAdminUser" -AdminPassword "MySecurePassword!"
+
+    Creates an Azure lab environment in the CanadaCentral region with the specified resource group name,
+    administrator username, and password.
+
+#>
+
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory = $true, HelpMessage = "The name of the resource group to create.")]
+    [string] $ResourceGroupName,
+
+    [Parameter(Mandatory = $true, HelpMessage = "The Azure region to deploy the resources to (e.g., EastUS, WestEurope).")]
+    [string] $Location,
+
+    [Parameter(Mandatory = $true, HelpMessage = "The username for the virtual machine administrator account.")]
+    [string] $AdminUsername,
+
+    [Parameter(Mandatory = $true, HelpMessage = "The password for the virtual machine administrator account.")]
+    [SecureString] $AdminPassword
+)
+
+#region Variables
+
+# Virtual Network and Subnet Configuration
+$ferVirtualNetworkName = "ferLabVNet"
+$ferSubnetName         = "ferLabSubnet"
+$ferSubnetPrefix       = "10.0.0.0/24"
+
+# Network Security Group Configuration
+$ferNetworkSecurityGroupName = "ferLabNSG"
+
+# Load Balancer Configuration
+$ferLoadBalancerName       = "ferLabLB"
+$ferFrontendIPName         = "ferLabLBFE"
+$ferBackendPoolName        = "ferLabLBBE"
+$ferLoadBalancingRuleName  = "ferLabLBRule"
+$ferProbeName              = "ferLabLBProbe"
+$ferProbePort              = 80
+$ferLBPort                 = 80
+
+# Virtual Machine Configuration
+$ferVMNamePrefix           = "ferLabVM"
+$ferVMCount                = 3
+$ferVMSize               = "Standard_D8s_v3"    # 8 vCPU, 32 GB RAM (close to your spec, but 32GB is closest)
+$ferOSDiskSizeGB         = 120
+$ferDataDiskSizeGB       = 512
+$ferStorageAccountType     = "Premium_LRS" # For best performance with large data disk.
+
+#endregion Variables
+
+#region Helper Functions
+
+function Run-AzureCommand {
+    <#
+    .SYNOPSIS
+        Executes an Azure CLI command and handles errors.
+
+    .DESCRIPTION
+        This function executes an Azure CLI command, writes the command and output to the console,
+        and handles any errors that occur during execution.  It improves script robustness
+        by centralizing error handling for Azure CLI commands.
+
+    .PARAMETER Command
+        The Azure CLI command to execute (e.g., "az group create").
+
+    .PARAMETER Parameters
+        A hashtable of parameters to pass to the Azure CLI command.
+
+    .PARAMETER PassThru
+        A switch indicating whether to pass the output of the Azure CLI command to the caller.
+        If this switch is present, the function returns the output; otherwise, it returns $null.
+
+    .RETURNS
+        If PassThru is specified, returns the output of the Azure CLI command.  Otherwise, returns $null.
+
+    .EXAMPLE
+        Run-AzureCommand -Command "az group create" -Parameters @{ "name" = "MyRG"; "location" = "EastUS" }
+
+        Executes the "az group create" command with the specified parameters and displays the output.
+
+    .EXAMPLE
+        $output = Run-AzureCommand -Command "az vm list" -Parameters @{ "resource-group" = "MyRG" } -PassThru
+
+        Executes the "az vm list" command, captures the output in the $output variable, and displays it.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, HelpMessage = "The Azure CLI command to execute.")]
+        [string] $Command,
+
+        [Parameter(HelpMessage = "A hashtable of parameters to pass to the Azure CLI command.")]
+        [hashtable] $Parameters,
+
+        [switch] $PassThru
+    )
+
+    # Build the complete command string
+    $CommandString = $Command
+    if ($Parameters) {
+        foreach ($Key in $Parameters.Keys) {
+            $Value = $Parameters[$Key]
+            if ($Value -is [SecureString]) {
+                $Value = ConvertFrom-SecureString -SecureString $Value -AsPlainText  # Convert SecureString to plain text
+            }
+            $CommandString += " --$Key ""$Value"""
+        }
+    }
+
+    Write-Host "Executing Azure CLI command: $($CommandString)" -ForegroundColor Cyan
+
+    try {
+        # Execute the Azure CLI command and capture the output
+        if ($PassThru) {
+            $Output = az $CommandString | ConvertFrom-Json
+        }
+        else {
+            az $CommandString | Out-Null
+        }
+
+
+        if ($LastExitCode -ne 0) {
+            #If the az command failed, throw an exception
+             throw "Azure CLI command '$CommandString' failed with exit code $($LastExitCode)."
+        }
+    }
+    catch {
+        # Catch any errors that occurred during the Azure CLI command execution
+        Write-Error "Error executing Azure CLI command '$CommandString': $($_.Exception.Message)"
+        return $null  # Return $null to indicate failure
+    }
+
+    # Return the output if PassThru was specified
+    if ($PassThru) {
+        return $Output
+    }
+}
+
+#endregion Helper Functions
+
+#region Script Logic
+
+try {
+    #region Authentication
+    # Check if the user is logged in to Azure.  If not, log in.
+    Write-Host "Checking Azure authentication..." -ForegroundColor Cyan
+    $AzureContext = Get-AzContext -ErrorAction SilentlyContinue
+    if (-not $AzureContext) {
+        Write-Host "Not logged in to Azure.  Please authenticate..." -ForegroundColor Cyan
+        az login | Out-Null
+        if ($LastExitCode -ne 0)
+        {
+             throw "Azure CLI login failed."
+        }
+    }
+    #endregion Authentication
+
+    # Create Resource Group
+    Write-Host "Creating resource group '$ResourceGroupName' in '$Location'..." -ForegroundColor Cyan
+    Run-AzureCommand -Command "az group create" -Parameters @{
+        "name"     = $ResourceGroupName
+        "location" = $Location
+    }
+
+    # Create Virtual Network and Subnet
+    Write-Host "Creating virtual network '$ferVirtualNetworkName' and subnet '$ferSubnetName'..." -ForegroundColor Cyan
+    Run-AzureCommand -Command "az network vnet create" -Parameters @{
+        "name"            = $ferVirtualNetworkName
+        "resource-group"  = $ResourceGroupName
+        "location"        = $Location
+        "address-prefixes" = "10.0.0.0/16"
+    }
+    Run-AzureCommand -Command "az network vnet subnet create" -Parameters @{
+        "name"             = $ferSubnetName
+        "resource-group"   = $ResourceGroupName
+        "vnet-name"        = $ferVirtualNetworkName
+        "address-prefixes" = $ferSubnetPrefix
+    }
+
+    # Create Network Security Group
+    Write-Host "Creating network security group '$ferNetworkSecurityGroupName'..." -ForegroundColor Cyan
+    Run-AzureCommand -Command "az network nsg create" -Parameters @{
+        "name"            = $ferNetworkSecurityGroupName
+        "resource-group"  = $ResourceGroupName
+        "location"        = $Location
+    }
+
+    # Create Load Balancer
+    Write-Host "Creating load balancer '$ferLoadBalancerName'..." -ForegroundColor Cyan
+    Run-AzureCommand -Command "az network lb create" -Parameters @{
+        "name"            = $ferLoadBalancerName
+        "resource-group"  = $ResourceGroupName
+        "location"        = $Location
+        "frontend-ip-name" = $ferFrontendIPName
+        "subnet"          = $ferSubnetName
+        "vnet-name"       = $ferVirtualNetworkName
+    }
+
+    # Create Load Balancer Backend Pool
+    Run-AzureCommand -Command "az network lb address-pool create" -Parameters @{
+        "name"            = $ferBackendPoolName
+        "lb-name"         = $ferLoadBalancerName
+        "resource-group"  = $ResourceGroupName
+    }
+
+     # Create Load Balancer Probe
+    Run-AzureCommand -Command "az network lb probe create" -Parameters @{
+        "name"            = $ferProbeName
+        "lb-name"         = $ferLoadBalancerName
+        "resource-group"  = $ResourceGroupName
+        "port"            = $ferProbePort
+        "protocol"        = "tcp"
+    }
+
+    # Create Load Balancing Rule
+    Run-AzureCommand -Command "az network lb rule create" -Parameters @{
+        "name"                = $ferLoadBalancingRuleName
+        "lb-name"             = $ferLoadBalancerName
+        "resource-group"      = $ResourceGroupName
+        "frontend-ip-name"    = $ferFrontendIPName
+        "backend-pool-name"   = $ferBackendPoolName
+        "protocol"            = "tcp"
+        "frontend-port"       = $ferLBPort
+        "backend-port"        = $ferLBPort
+        "probe-name"          = $ferProbeName
+    }
+
+    # Create Virtual Machines
+    for ($i = 1; $i -le $ferVMCount; $i++) {
+        $ferVMName = "$ferVMNamePrefix$i"
+        Write-Host "Creating virtual machine '$ferVMName'..." -ForegroundColor Cyan
+
+        # Create the VM
+        Run-AzureCommand -Command "az vm create" -Parameters @{
+            "name"              = $ferVMName
+            "resource-group"    = $ResourceGroupName
+            "location"          = $Location
+            "vnet-name"         = $ferVirtualNetworkName
+            "subnet"            = $ferSubnetName
+            "nsg"               = $ferNetworkSecurityGroupName
+            "admin-username"    = $AdminUsername
+            "admin-password"    = $AdminPassword
+            "size"              = $ferVMSize
+            "os-disk-size-gb"  = $ferOSDiskSizeGB
+            "public-ip-address" = $null #important
+            "load-balancer"     = $ferLoadBalancerName
+            "backend-pool-name" = $ferBackendPoolName
+        }
+
+        # Create and Attach Data Disk
+        $ferDataDiskName = "$ferVMName-DataDisk"
+        Write-Host "Creating and attaching data disk '$ferDataDiskName' to '$ferVMName'..." -ForegroundColor Cyan
+        Run-AzureCommand -Command "az disk create" -Parameters @{
+            "name"              = $ferDataDiskName
+            "resource-group"    = $ResourceGroupName
+            "location"          = $Location
+            "size-gb"           = $ferDataDiskSizeGB
+            "sku"               = $ferStorageAccountType
+        }
+        Run-AzureCommand -Command "az vm disk attach" -Parameters @{
+            "vm-name"         = $ferVMName
+            "resource-group"    = $ResourceGroupName
+            "name"              = $ferDataDiskName
+        }
+    }
+
+    Write-Host "Successfully created Azure lab infrastructure." -ForegroundColor Green
+}
+catch {
+    # Catch any errors that occurred during the script execution
+    Write-Error "An error occurred: $($_.Exception.Message)"
+    exit
+}
+
+#endregion Script Logic
