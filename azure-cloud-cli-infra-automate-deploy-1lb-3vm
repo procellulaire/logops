@@ -1,7 +1,8 @@
 <#
 .SYNOPSIS
-    Creates Azure cloud infrastructure for a lab environment, including a load balancer and virtual machines.
+    Creates Azure cloud infrastructure for a SYSLOG Server lab environment, including a load balancer and virtual machines.
     Part of procloudadmin (C) tools , by Fernando Cabal   - 02 April 2025
+
 .DESCRIPTION
     This script automates the deployment of a basic Azure lab environment.  It creates a resource group,
     virtual network, subnet, network security group, load balancer, a set of virtual machines,
