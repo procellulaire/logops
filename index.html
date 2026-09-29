@@ -1,0 +1,1954 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="An offline syslog configuration, investigation, and maintenance workbench.">
+  <title>LogOps | Offline syslog workbench</title>
+  <style>:root {
+  --sidebar: #12242c;
+  --sidebar-muted: #a6bbc2;
+  --ink: #172f39;
+  --muted: #586e78;
+  --subtle: #73858d;
+  --accent: #0b756c;
+  --accent-hover: #075c55;
+  --accent-soft: #eaf6f2;
+  --canvas: #f3f6f7;
+  --surface: #fff;
+  --border: #dce5e8;
+  --danger: #a42c35;
+  --warning: #7d5417;
+  --shadow: 0 3px 14px rgb(18 43 53 / 3%);
+  --radius: 14px;
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--canvas);
+  font-synthesis: none;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; font-size: 14px; line-height: 1.55; }
+button, input, textarea, select { font: inherit; }
+button, a, input, textarea, select, summary { -webkit-tap-highlight-color: transparent; }
+button, input, textarea, select { accent-color: var(--accent); }
+button, select, summary { cursor: pointer; }
+button:disabled, input:disabled, select:disabled { cursor: not-allowed; }
+button:disabled { opacity: .45; }
+a { color: var(--accent); }
+button, a, summary, input, textarea, select, [tabindex] { outline-offset: 4px; }
+:focus-visible { outline: 3px solid #16a798; }
+::selection { background: #bce7df; color: #10352e; }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: clamp(26px, 2.35vw, 37px); line-height: 1.2; letter-spacing: -1.15px; font-weight: 700; }
+h2 { font-size: 17px; line-height: 1.4; letter-spacing: -.3px; }
+h3 { font-size: 15px; }
+p { color: var(--muted); }
+small { font-size: 12px; line-height: 1.5; color: var(--muted); }
+code, pre, .code-editor { font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+code { font-size: .9em; padding: 2px 5px; border-radius: 4px; background: #edf2f4; color: #264955; overflow-wrap: anywhere; }
+.icon-library { position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none; }
+.icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; vertical-align: middle; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.skip-link { position: fixed; left: 20px; top: -80px; z-index: 100; background: #fff; padding: 12px 20px; border-radius: 8px; }
+.skip-link:focus { top: 12px; }
+.app-shell { min-height: 100vh; display: grid; grid-template-columns: 242px minmax(0, 1fr); }
+.sidebar { background: var(--sidebar); color: #edf4f6; padding: 34px 18px 22px; position: sticky; top: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow-y: auto; }
+.brand { display: flex; gap: 12px; align-items: center; color: #fff; text-decoration: none; padding: 0 12px; font-size: 27px; line-height: 1.2; font-weight: 730; letter-spacing: -.8px; }
+.brand small { display: block; color: #adc4ca; font-size: 8px; letter-spacing: 1.85px; font-weight: 600; margin-top: 7px; }
+.brand-mark { display: grid; place-items: center; width: 42px; height: 45px; border: 1px solid #397269; border-radius: 12px; background: #193c3d; }
+.brand-mark svg { width: 30px; height: 30px; fill: #77d5bf; }
+.nav-label { margin: 49px 16px 15px; color: #96abb3; font-size: 10px; font-weight: 650; letter-spacing: 1.6px; }
+.primary-nav { display: grid; gap: 7px; }
+.primary-nav a { display: flex; align-items: center; gap: 12px; min-height: 47px; padding: 12px 15px; border-radius: 9px; color: #bdcdd3; text-decoration: none; font-size: 13px; font-weight: 550; white-space: nowrap; border: 1px solid transparent; }
+.primary-nav a:hover { color: #fff; background: #21363e; }
+.primary-nav a[aria-current="page"] { color: #b5f1df; background: #20443f; border-color: #2d5c52; }
+.primary-nav .icon { width: 18px; height: 18px; }
+.nav-dot { display: none; width: 5px; height: 5px; border-radius: 50%; background: #80d6bb; margin-left: auto; }
+.primary-nav a[aria-current="page"] .nav-dot { display: block; }
+.sidebar-bottom { margin-top: auto; padding-top: 56px; }
+.local-card { margin: 0 5px; padding: 17px; border: 1px solid #354a50; border-radius: 11px; background: linear-gradient(150deg, #213a3e, #1a2d34); }
+.local-card > .icon { color: #8bcebe; margin-bottom: 11px; }
+.local-card strong { display: block; font-size: 12px; color: #e3eeee; }
+.local-card p { font-size: 11px; line-height: 1.75; color: #b1c4ca; margin-top: 7px; }
+.local-indicator { display: block; color: #91d4c3; font-size: 9px; font-weight: 600; letter-spacing: 1.4px; padding-top: 16px; }
+.sidebar-footer { display: flex; align-items: center; gap: 7px; color: #a5bbc3; font-size: 10px; padding: 21px 8px 0; }
+.status-dot { display: inline-block; width: 6px; height: 6px; background: #259b80; border-radius: 50%; flex-shrink: 0; }
+.sidebar-footer .status-dot { background: #72c9ac; }
+.workspace { min-width: 0; }
+.topbar { height: 73px; padding: 0 38px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.breadcrumb { color: var(--muted); font-size: 12px; }
+.breadcrumb span { padding: 0 13px; color: #a0adb3; }
+.breadcrumb strong { color: var(--ink); font-weight: 600; }
+.topbar-badges { display: flex; align-items: center; gap: 18px; white-space: nowrap; }
+.badge, .heading-tag, .count-pill { display: inline-flex; align-items: center; gap: 7px; border-radius: 6px; padding: 4px 9px; font-size: 10px; font-weight: 650; color: #536973; background: #f0f4f5; border: 1px solid #e0e8eb; }
+.badge-local { background: var(--accent-soft); color: #17654f; border-color: #d8eae1; }
+.session-badge { font-size: 11px; color: var(--muted); }
+main { padding: 35px 38px 0; max-width: 1800px; margin: auto; }
+.page-heading { display: flex; align-items: center; justify-content: space-between; gap: 22px; margin: 0 0 27px; }
+.eyebrow { color: var(--accent); font-size: 10px; font-weight: 750; letter-spacing: 1.65px; margin-bottom: 10px; }
+.page-heading h1 + p { margin-top: 10px; max-width: 760px; font-size: 13px; }
+.heading-tag { border: 1px solid #d4e1e4; background: #f7fafb; padding: 8px 11px; white-space: nowrap; font-size: 10px; font-weight: 550; }
+.heading-tag .icon { width: 15px; height: 15px; }
+.overview-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; margin-bottom: 22px; }
+.overview-card { display: flex; gap: 13px; align-items: center; border: 1px solid var(--border); border-radius: 11px; padding: 20px 17px; background: var(--surface); box-shadow: var(--shadow); }
+.overview-icon { color: var(--accent); background: #edf5f2; display: grid; place-items: center; width: 39px; height: 39px; border-radius: 10px; flex-shrink: 0; }
+.overview-card strong { font-size: 12px; font-weight: 650; }
+.overview-card p { font-size: 11px; margin-top: 3px; line-height: 1.6; }
+.notice { display: flex; align-items: flex-start; gap: 12px; border: 1px solid #d6e4e5; border-left: 3px solid #429b90; background: #edf5f5; color: #375761; border-radius: 9px; padding: 14px 17px; margin-bottom: 24px; font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
+.notice > .icon { color: var(--accent); margin-top: 2px; width: 17px; height: 17px; }
+.notice strong { font-weight: 650; color: #264951; }
+.notice-warning { color: var(--warning); background: #fff8eb; border-color: #efe0c1; border-left-color: #bc8b38; }
+.notice-warning strong { color: #704911; }
+.notice-error { color: var(--danger); background: #fff2f2; border-color: #f0d0d3; border-left-color: #b5434a; }
+.notice-error strong { color: var(--danger); }
+.notice-subtle { margin-bottom: 0; margin-top: 20px; background: #f4f8f8; }
+.split-layout { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 23px; align-items: start; }
+.config-layout { grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); }
+.stack { display: grid; gap: 23px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); min-width: 0; overflow: hidden; }
+.card-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 20px 23px; border-bottom: 1px solid #e9eef0; flex-wrap: wrap; }
+.step-label { display: block; color: #607981; font-size: 9px; font-weight: 650; letter-spacing: 1.35px; margin-bottom: 4px; }
+.card-body { padding: 22px 23px; }
+.card-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 17px 23px; border-top: 1px solid #e9eef0; background: #fcfdfd; }
+.field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 18px; }
+.field { display: flex; flex-direction: column; min-width: 0; gap: 6px; margin-bottom: 17px; }
+.field-grid .field { margin: 0; }
+.field-grid .field-wide { grid-column: 1 / -1; }
+label, legend, .field-label { font-size: 12px; font-weight: 600; display: block; color: #344f5c; }
+label { margin-bottom: 7px; }
+.field label { margin-bottom: 0; }
+.label-hint { float: right; font-size: 10px; color: var(--muted); font-weight: 400; }
+input:not([type="checkbox"]):not([type="file"]), textarea, select { width: 100%; min-width: 0; border: 1px solid #ccd9de; border-radius: 7px; background: #fff; color: #223d48; padding: 10px 11px; font-size: 12px; line-height: 1.5; transition: border-color .15s, box-shadow .15s; }
+input:not([type="checkbox"]):not([type="file"]), select { min-height: 40px; }
+input::placeholder, textarea::placeholder { color: #6c828d; opacity: 1; }
+input:focus, textarea:focus, select:focus { border-color: #359b8f; }
+input:disabled, select:disabled { background: #f2f5f6; color: #70848d; }
+textarea { resize: vertical; min-height: 80px; }
+textarea.code-editor { font-size: 11px; line-height: 1.8; background: #122831; color: #d4e8ec; border-color: #263f49; padding: 15px 16px; tab-size: 4; border-radius: 8px; min-height: 180px; white-space: pre; overflow: auto; }
+textarea.code-editor::placeholder { color: #9bb0ba; }
+textarea.code-editor-short { min-height: 80px; }
+textarea.code-editor-large { min-height: 480px; }
+textarea[readonly] { background: #1d323b; }
+.spaced-label { margin-top: 24px; }
+fieldset { border: 0; min-width: 0; padding: 19px 0 0; margin: 22px 0 0; border-top: 1px solid #e5ecef; }
+legend { padding: 0 7px 0 0; font-size: 11px; color: #4e6974; }
+fieldset:disabled label, fieldset:disabled small { color: #788b93; }
+.flow-preview { display: flex; align-items: center; gap: 9px; font-size: 11px; font-weight: 600; padding: 12px 13px; color: #2a6b60; background: #eef7f3; border: 1px solid #dbece3; border-radius: 7px; margin-top: 19px; flex-wrap: wrap; }
+.flow-preview .icon { width: 15px; height: 15px; }
+.helper { font-size: 11px; line-height: 1.7; margin-top: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.button { display: inline-flex; justify-content: center; align-items: center; gap: 8px; border: 1px solid transparent; border-radius: 7px; padding: 10px 13px; font-size: 11px; line-height: 1.4; font-weight: 600; min-height: 39px; text-decoration: none; user-select: none; transition: background .15s, border-color .15s; cursor: pointer; }
+.button .icon { width: 16px; height: 16px; }
+.button-primary { color: #fff; background: var(--accent); border-color: var(--accent); box-shadow: 0 2px 3px rgb(13 103 85 / 10%); }
+.button-primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+.button-secondary { color: #344f5c; background: #fff; border-color: #ccd9de; }
+.button-secondary:hover:not(:disabled) { background: #eef6f4; border-color: #95bdb2; }
+.button-ghost { color: var(--accent); background: transparent; }
+.button-ghost:hover:not(:disabled) { background: var(--accent-soft); }
+.button-icon { background: #f2f6f7; padding: 9px; border-color: var(--border); }
+.button-row { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 14px; }
+.no-margin { margin: 0; }
+.card-body > textarea + .button { margin-top: 14px; }
+.notes-list { margin: 17px 0 0; padding: 0 0 0 17px; font-size: 11px; color: var(--muted); line-height: 1.8; overflow-wrap: anywhere; }
+.notes-list:empty { display: none; }
+.notes-list li + li { margin-top: 7px; }
+.file-button { position: relative; flex-shrink: 0; }
+.file-button label { margin: 0; }
+.file-input { position: absolute; width: 1px; height: 1px; opacity: 0; padding: 0; }
+.file-input:focus-visible + label { outline: 3px solid #16a798; outline-offset: 4px; }
+.file-input:disabled + label { opacity: .5; cursor: not-allowed; }
+.editor-meta { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 11px; font-size: 10px; color: var(--muted); overflow-wrap: anywhere; }
+.editor-meta span:last-child { white-space: nowrap; }
+.settings-list { display: grid; gap: 15px; }
+.settings-list .field { margin: 0; }
+#config-settings { margin: 16px 0 0; padding: 0; border: 0; }
+.syntax-summary { color: var(--muted); font-size: 11px; margin-top: 8px; overflow-wrap: anywhere; white-space: pre-wrap; }
+.validation-card { background: #fcfefe; }
+.validation-card p { font-size: 12px; }
+.validation-card label { margin-top: 17px; }
+.empty-state { text-align: center; padding: 48px 24px 51px; }
+.empty-icon { display: inline-flex; align-items: center; justify-content: center; width: 62px; height: 62px; border-radius: 18px; background: #edf5f3; color: #437f74; margin-bottom: 18px; border: 1px solid #dfeee7; }
+.empty-icon .icon { width: 27px; height: 27px; }
+.empty-state h3 { margin: 0 0 7px; color: #334f5a; font-weight: 600; }
+.empty-state p { max-width: 400px; margin: 0 auto; font-size: 12px; line-height: 1.75; }
+.empty-state.compact { padding: 26px 10px; }
+.empty-state.compact > .icon { color: #5c968b; margin-bottom: 11px; }
+.explorer-summary { display: grid; grid-template-columns: 1fr 1fr 1fr 1.2fr; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 22px; }
+.metric { padding: 22px 24px; position: relative; display: flex; flex-direction: column; align-items: flex-start; }
+.metric + .metric { border-left: 1px solid #e5ecee; }
+.metric > span { font-size: 11px; color: var(--muted); }
+.metric strong { display: block; font-size: 29px; letter-spacing: -.8px; line-height: 1.4; margin-top: 4px; font-weight: 650; }
+.metric small { display: block; margin-top: 3px; font-size: 10px; }
+.metric-note { background: #f6faf8; border-radius: 0 var(--radius) var(--radius) 0; }
+.metric-note .icon { color: var(--accent); width: 16px; height: 16px; }
+.metric-note strong { font-size: 12px; letter-spacing: 0; margin-top: 8px; }
+.metric-note small { font-size: 11px; line-height: 1.7; }
+.drop-zone { display: flex; align-items: center; gap: 17px; padding: 23px; border: 1px dashed #9fbcb8; border-radius: 11px; background: #f8fcfa; margin-bottom: 22px; transition: background .15s, border-color .15s; }
+.drop-zone.drag-active { background: #dff3eb; border-color: var(--accent); outline: 2px solid var(--accent); }
+.drop-zone[aria-disabled="true"] { opacity: .65; }
+.drop-icon { background: #e6f1ec; width: 43px; height: 43px; color: var(--accent); border-radius: 11px; display: grid; place-items: center; flex-shrink: 0; }
+.drop-copy { flex: 1; }
+.drop-copy strong { display: block; font-size: 13px; }
+.drop-copy p { font-size: 11px; margin-top: 5px; }
+.load-progress { display: flex; align-items: center; gap: 20px; margin-bottom: 18px; padding: 15px 20px; border: 1px solid var(--border); background: #fff; border-radius: 8px; }
+.load-progress > div { flex: 1; min-width: 0; font-size: 12px; overflow-wrap: anywhere; }
+progress { display: block; margin-top: 9px; width: 100%; height: 7px; border: 0; border-radius: 5px; overflow: hidden; }
+progress::-webkit-progress-bar { background: #e5efec; }
+progress::-webkit-progress-value { background: var(--accent); }
+progress::-moz-progress-bar { background: var(--accent); }
+.query-card { margin-bottom: 22px; }
+.query-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.query-input-row { display: flex; align-items: flex-end; gap: 12px; }
+.query-input-row .field { margin: 0; }
+.query-field { flex: 1; }
+.source-field { width: 180px; }
+.query-input-wrap { position: relative; }
+.query-input-wrap .icon { position: absolute; top: 12px; left: 12px; color: #6b868e; width: 17px; height: 17px; }
+.query-input-wrap input { padding-left: 38px !important; font-family: Consolas, "Liberation Mono", monospace; min-height: 42px !important; }
+.source-field select, #query-run { min-height: 42px; }
+.query-examples { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+.query-examples > span { font-size: 10px; color: var(--muted); margin-right: 2px; }
+.query-chip { padding: 5px 9px; font-size: 10px; color: #3b6b65; background: #f2f7f5; border: 1px solid #d9e7e1; border-radius: 5px; }
+.query-chip:hover { background: #e2f1e9; }
+.query-help { margin-top: 18px; border-top: 1px solid #e9eef0; padding-top: 13px; }
+.query-help summary { font-size: 11px; color: #526e79; width: fit-content; }
+.help-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 16px; padding: 16px; background: #f7fafb; border-radius: 7px; }
+.help-grid h3 { font-size: 12px; margin-bottom: 6px; }
+.help-grid p { font-size: 11px; line-height: 1.9; }
+.help-grid p + p { margin-top: 9px; }
+.inline-error { margin-top: 14px; padding: 11px 13px; background: #fff2f2; color: var(--danger); border: 1px solid #f0d0d3; border-radius: 7px; font-size: 12px; overflow-wrap: anywhere; }
+.count-pill { margin-left: 7px; border: 0; background: #eaf3f0; color: #216652; padding: 2px 8px; vertical-align: middle; }
+.results-card .card-heading .helper { margin-top: 4px; }
+.table-scroll { overflow: auto; max-height: 650px; }
+table { width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; }
+thead { background: #f5f8f9; color: #4d6974; position: sticky; top: 0; z-index: 1; }
+th { font-size: 10px; font-weight: 650; letter-spacing: .2px; white-space: nowrap; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+td { padding: 11px 16px; border-bottom: 1px solid #edf1f3; color: #3b5762; max-width: 480px; min-width: 85px; vertical-align: top; }
+tbody tr:hover { background: #f4faf7; }
+tbody tr:nth-child(even) { background: #fafcfc; }
+tbody tr:nth-child(even):hover { background: #f0f7f4; }
+.cell-text { display: block; max-width: 440px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: Consolas, "Liberation Mono", monospace; }
+td .row-view { min-height: 28px; padding: 4px 8px; font-size: 10px; }
+.severity { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 10px; background: #edf2f4; color: #455e68; font-weight: 600; }
+.severity-high { background: #fceced; color: #9e3541; }
+.severity-warning { background: #fff3db; color: #80561a; }
+.severity-info { background: #e8f4ef; color: #236b55; }
+.pagination { padding: 14px 23px; display: flex; align-items: center; justify-content: space-between; gap: 14px; background: #fcfdfd; }
+.pagination > span { font-size: 11px; color: var(--muted); }
+.pagination .button { min-height: 32px; padding: 7px 11px; }
+.footnote { font-size: 11px; line-height: 1.8; margin-top: 17px; color: var(--muted); }
+.preset-grid { display: flex; gap: 8px; flex-wrap: wrap; margin: 11px 0 25px; }
+.preset-button { display: inline-flex; align-items: center; gap: 6px; padding: 11px 10px; background: #f8fbfa; color: #315f57; border: 1px solid #d5e4df; border-radius: 7px; font-size: 10px; }
+.preset-button:hover { background: #eaf5ef; border-color: #8bb8a7; }
+.preset-button .icon { width: 15px; height: 15px; }
+.checkbox-field { justify-content: center; }
+.checkbox-field label { display: flex; align-items: center; gap: 8px; }
+input[type="checkbox"] { width: 16px; height: 16px; margin: 0; }
+.preview-results { display: grid; gap: 9px; margin-top: 14px; }
+.preview-result { display: flex; gap: 12px; justify-content: space-between; background: #f5f9f7; border: 1px solid #e0ebe5; padding: 11px 12px; border-radius: 7px; font-size: 12px; }
+.preview-result span { overflow-wrap: anywhere; min-width: 0; }
+.preview-result strong { color: var(--accent); white-space: nowrap; }
+.preview-sample { font-family: Consolas, "Liberation Mono", monospace; font-size: 11px; line-height: 1.8; background: #f6f8f9; border: 1px solid var(--border); padding: 12px; border-radius: 7px; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; max-height: 200px; overflow: auto; }
+.workspace-footer { display: flex; justify-content: space-between; gap: 16px; margin-top: 35px; padding: 20px 0 23px; border-top: 1px solid var(--border); font-size: 10px; color: #607780; }
+dialog { width: min(820px, calc(100% - 32px)); max-height: calc(100vh - 48px); max-height: calc(100dvh - 48px); padding: 0; border: 1px solid #bdced2; border-radius: 15px; background: #fff; color: var(--ink); box-shadow: 0 20px 80px rgb(5 24 33 / 25%); }
+dialog::backdrop { background: rgb(10 28 36 / 60%); }
+.dialog-heading { display: flex; align-items: center; justify-content: space-between; padding: 22px 26px; border-bottom: 1px solid var(--border); background: #f9fcfb; }
+.dialog-heading .eyebrow { margin-bottom: 4px; }
+.dialog-body { padding: 22px 26px; overflow: auto; }
+.row-fields { display: grid; grid-template-columns: 140px minmax(0, 1fr); margin: 0 0 24px; font-size: 12px; }
+.row-fields dt, .row-fields dd { padding: 9px 10px; border-bottom: 1px solid #e5edef; overflow-wrap: anywhere; }
+.row-fields dt { font-weight: 600; color: #4c6874; background: #f5f8f9; }
+.row-fields dd { margin: 0; white-space: pre-wrap; font-family: Consolas, "Liberation Mono", monospace; }
+.toast-region { position: fixed; bottom: 24px; right: 24px; width: min(430px, calc(100% - 32px)); z-index: 50; pointer-events: none; }
+.toast { display: flex; align-items: flex-start; gap: 12px; padding: 16px 17px; background: #153e36; color: #f0fbf7; border: 1px solid #528f7c; border-radius: 10px; box-shadow: 0 9px 30px rgb(9 29 36 / 22%); font-size: 12px; line-height: 1.7; pointer-events: auto; overflow-wrap: anywhere; }
+.toast-error { background: #6d242b; border-color: #b1676c; }
+.toast > span { flex: 1; min-width: 0; }
+.toast button { background: transparent; color: inherit; border: 1px solid currentColor; border-radius: 5px; padding: 2px 8px; font-size: 12px; }
+@media (min-width: 1600px) {
+  main { padding-top: 43px; }
+  .card-body { padding: 25px 27px; }
+  .card-heading, .card-footer { padding-left: 27px; padding-right: 27px; }
+}
+@media (max-width: 1250px) {
+  .app-shell { grid-template-columns: 216px minmax(0, 1fr); }
+  .sidebar { padding-left: 12px; padding-right: 12px; }
+  main { padding: 28px 24px 0; }
+  .topbar { padding: 0 24px; }
+  .overview-card { padding: 15px 12px; gap: 9px; align-items: flex-start; }
+  .overview-icon { width: 32px; height: 32px; }
+  .overview-card strong { font-size: 11px; }
+  .split-layout { gap: 18px; }
+  .card-heading, .card-body, .card-footer { padding-left: 18px; padding-right: 18px; }
+  .field-grid { gap: 14px 12px; }
+  .metric { padding: 18px; }
+  .page-heading > .heading-tag { display: none; }
+}
+@media (max-width: 1080px) {
+  .split-layout { grid-template-columns: minmax(0, 1fr); }
+  .overview-grid { gap: 10px; }
+  .overview-card { display: block; }
+  .overview-icon { margin-bottom: 8px; }
+  .overview-card p { font-size: 10px; }
+  .explorer-summary { grid-template-columns: 1fr 1fr 1fr; }
+  .metric-note { grid-column: 1 / -1; border-left: 0 !important; border-top: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius); display: block; padding: 12px 18px; }
+  .metric-note .icon { margin-right: 6px; }
+  .metric-note strong { display: inline; }
+  .metric-note small { display: block; }
+  .page-heading { align-items: flex-start; }
+  .page-heading > .button { white-space: nowrap; }
+  .query-input-row { flex-wrap: wrap; }
+  .query-field { flex-basis: 100%; }
+  .source-field { flex: 1; }
+}
+@media (max-width: 760px) {
+  .app-shell { display: block; }
+  .sidebar { position: relative; height: auto; padding: 18px 18px 0; display: block; overflow: visible; }
+  .brand { padding: 0; font-size: 24px; width: fit-content; }
+  .brand small { font-size: 8px; margin-top: 3px; }
+  .brand-mark { width: 37px; height: 40px; }
+  .nav-label, .sidebar-bottom { display: none; }
+  .primary-nav { display: flex; overflow-x: auto; margin-top: 17px; padding: 0 2px 12px; gap: 6px; }
+  .primary-nav a { flex-shrink: 0; min-height: 40px; padding: 9px 11px; font-size: 11px; gap: 7px; }
+  .primary-nav .icon { width: 16px; height: 16px; }
+  .nav-dot { display: none !important; }
+  .topbar { height: 54px; padding: 0 20px; }
+  .breadcrumb { font-size: 11px; }
+  .session-badge { display: none; }
+  main { padding: 25px 20px 0; }
+  .page-heading { margin-bottom: 23px; gap: 15px; flex-wrap: wrap; }
+  h1 { font-size: 29px; }
+  .overview-grid { grid-template-columns: minmax(0, 1fr); }
+  .overview-card { display: flex; align-items: center; padding: 13px 15px; gap: 12px; }
+  .overview-icon { margin-bottom: 0; width: 34px; height: 34px; }
+  .overview-card strong { font-size: 12px; }
+  .overview-card p { font-size: 11px; }
+  .notice { padding: 12px 14px; font-size: 11px; }
+  .card-heading { padding-top: 17px; padding-bottom: 17px; }
+  .card-body { padding-top: 18px; padding-bottom: 18px; }
+  .drop-zone { flex-wrap: wrap; gap: 12px; padding: 18px; }
+  .drop-copy { flex-basis: calc(100% - 58px); }
+  .drop-zone .file-button { width: 100%; }
+  .drop-zone .file-button label { width: 100%; }
+  .metric { padding: 15px 11px; }
+  .metric strong { font-size: 24px; }
+  .metric > span, .metric small { font-size: 10px; }
+  .metric-note strong { font-size: 12px; }
+  .metric-note small { font-size: 11px; }
+  .help-grid { grid-template-columns: minmax(0, 1fr); gap: 17px; }
+  .workspace-footer { flex-direction: column; gap: 5px; }
+  .row-fields { grid-template-columns: 100px minmax(0, 1fr); font-size: 11px; }
+  .toast-region { right: 16px; bottom: 16px; }
+}
+@media (max-width: 420px) {
+  main { padding: 22px 12px 0; }
+  .topbar { padding: 0 14px; }
+  h1 { font-size: 26px; }
+  .card-heading, .card-body, .card-footer { padding-left: 14px; padding-right: 14px; }
+  .field-grid { grid-template-columns: minmax(0, 1fr); }
+  .card-footer .button { width: 100%; }
+  .metric > span { max-width: 78px; min-height: 30px; }
+  .query-actions > .badge { display: none; }
+  .pagination { padding-left: 14px; padding-right: 14px; flex-wrap: wrap; }
+  .dialog-heading, .dialog-body { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
+}
+@media (forced-colors: active) {
+  .button, .badge, .query-chip, .primary-nav a[aria-current="page"], .toast { border: 1px solid ButtonText; }
+  .status-dot { background: CanvasText; }
+  .code-editor { forced-color-adjust: auto; }
+}
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to workspace</a>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="icon-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="icon-sliders" viewBox="0 0 24 24"><path d="M4 7h8m4 0h4M4 17h3m4 0h9"/><circle cx="14" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="icon-archive" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="5" rx="1"/><path d="M5 8v13h14V8M9 12h6"/></symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
+    <symbol id="icon-upload" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></symbol>
+    <symbol id="icon-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></symbol>
+    <symbol id="icon-terminal" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m6 8 4 4-4 4m7 0h5"/></symbol>
+    <symbol id="icon-file" viewBox="0 0 24 24"><path d="M14 2H5v20h14V7l-5-5Zm0 0v6h5M8 12h8m-8 4h8"/></symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Workbench navigation">
+      <a class="brand" href="#deployment" aria-label="LogOps deployment workspace">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M7 7h6v12h12v6H7z"/><path d="M19 7h6v6h-6z"/></svg></span>
+        <span>LogOps<small>SYSLOG WORKBENCH</small></span>
+      </a>
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="primary-nav" aria-label="Primary">
+        <a href="#deployment" data-view="deployment" aria-controls="deployment" aria-current="page"><svg class="icon"><use href="#icon-grid"/></svg><span>Deployment</span><span class="nav-dot" aria-hidden="true"></span></a>
+        <a href="#configuration" data-view="configuration" aria-controls="configuration"><svg class="icon"><use href="#icon-sliders"/></svg><span>Configuration</span></a>
+        <a href="#explorer" data-view="explorer" aria-controls="explorer"><svg class="icon"><use href="#icon-search"/></svg><span>Log explorer</span></a>
+        <a href="#detections" data-view="detections" aria-controls="detections"><svg class="icon"><use href="#icon-shield"/></svg><span>Detections</span></a>
+        <a href="#maintenance" data-view="maintenance" aria-controls="maintenance"><svg class="icon"><use href="#icon-archive"/></svg><span>Retention &amp; archive</span></a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="local-card"><svg class="icon"><use href="#icon-lock"/></svg><strong>Your files. Your machine.</strong><p>Files stay in this browser session. Nothing is uploaded or saved automatically.</p><span class="local-indicator">LOCAL BY DESIGN</span></div>
+        <div class="sidebar-footer"><span class="status-dot"></span> Offline operations toolkit</div>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div class="breadcrumb">Workspace <span aria-hidden="true">/</span> <strong id="current-view-name">Deployment</strong></div>
+        <div class="topbar-badges"><span class="badge badge-local"><span class="status-dot"></span> Offline ready</span><span class="session-badge">In-memory session</span></div>
+      </header>
+      <main id="main-content" tabindex="-1">
+        <noscript><div class="notice notice-error">JavaScript is required for this offline workbench. Enable it and reopen the bundled HTML file.</div></noscript>
+        <div id="runtime-error" class="notice notice-error" role="alert" hidden></div>
+
+        <section id="deployment" class="view" aria-labelledby="deployment-title">
+          <div class="page-heading"><div><p class="eyebrow">PLAN. CONFIGURE. OPERATE.</p><h1 id="deployment-title">A clearer path to better logs.</h1><p>Prepare a syslog deployment, investigate events, and keep retention under control.</p></div><span class="heading-tag"><svg class="icon"><use href="#icon-terminal"/></svg> No host connection</span></div>
+          <div class="overview-grid">
+            <div class="overview-card"><span class="overview-icon"><svg class="icon"><use href="#icon-sliders"/></svg></span><div><strong>Two engines, one workspace</strong><p>syslog-ng and rsyslog configuration</p></div></div>
+            <div class="overview-card"><span class="overview-icon"><svg class="icon"><use href="#icon-search"/></svg></span><div><strong>From raw events to answers</strong><p>Local search, aggregations, and exports</p></div></div>
+            <div class="overview-card"><span class="overview-icon"><svg class="icon"><use href="#icon-lock"/></svg></span><div><strong>Offline, not a remote console</strong><p>Review and download. Deploy on your host.</p></div></div>
+          </div>
+          <div class="notice"><svg class="icon"><use href="#icon-lock"/></svg><div><strong>A local preparation workspace.</strong> This browser does not install services, connect to hosts, or execute generated commands. Review every artifact and validate it with your installed native tools.</div></div>
+          <div class="split-layout deployment-layout">
+            <form id="deployment-form" class="card">
+              <div class="card-heading"><div><span class="step-label">01 / DEFINE</span><h2>Deployment profile</h2></div><span class="badge">Linux</span></div>
+              <div class="card-body">
+                <div class="field-grid">
+                  <div class="field"><label for="profile-engine">Syslog engine</label><select id="profile-engine" name="engine"><option value="syslog-ng">syslog-ng</option><option value="rsyslog">rsyslog</option></select></div>
+                  <div class="field"><label for="profile-role">Deployment role</label><select id="profile-role" name="role"><option value="server">Server / collect to file</option><option value="forwarder">Forwarder / relay to remote</option><option value="agent">Agent / local to remote</option></select></div>
+                  <div class="field"><label for="profile-environment">Environment</label><select id="profile-environment" name="environment"><option value="on-prem">On premises</option><option value="azure">Microsoft Azure</option><option value="aws">Amazon Web Services</option><option value="other">Other / hybrid</option></select></div>
+                  <div class="field"><label for="profile-transport">Transport</label><select id="profile-transport" name="transport"><option value="tls">TLS / encrypted</option><option value="tcp">TCP / unencrypted</option><option value="udp">UDP / unencrypted</option></select></div>
+                  <div class="field field-wide"><label for="profile-wireFormat">Wire format</label><select id="profile-wireFormat" name="wireFormat" aria-describedby="profile-wire-format-note"><option value="rfc3164">RFC3164 / traditional syslog</option><option value="rfc5424">RFC5424 / structured syslog</option></select><small id="profile-wire-format-note">Match the wire format and framing to your sender and receiver.</small></div>
+                </div>
+                <div id="profile-flow" class="flow-preview" aria-live="polite"></div>
+                <fieldset id="profile-listener"><legend>Network listener</legend><div class="field-grid"><div class="field"><label for="profile-bind">Bind address</label><input id="profile-bind" name="bind" type="text" autocomplete="off" spellcheck="false" required></div><div class="field"><label for="profile-port">Listen port</label><input id="profile-port" name="port" type="number" min="1" max="65535" required></div></div></fieldset>
+                <fieldset id="profile-remote"><legend>Remote destination</legend><div class="field-grid"><div class="field"><label for="profile-target">Target host or address</label><input id="profile-target" name="target" type="text" autocomplete="off" spellcheck="false" required></div><div class="field"><label for="profile-targetPort">Target port</label><input id="profile-targetPort" name="targetPort" type="number" min="1" max="65535" required></div></div></fieldset>
+                <fieldset><legend>Storage paths</legend><div class="field-grid"><div class="field"><label for="profile-logPath">Destination log file</label><input id="profile-logPath" name="logPath" type="text" autocomplete="off" spellcheck="false" required><small>Used by the server role.</small></div><div class="field"><label for="profile-queueDir">Persistent queue directory</label><input id="profile-queueDir" name="queueDir" type="text" autocomplete="off" spellcheck="false" aria-describedby="profile-queueDir-help" required><small id="profile-queueDir-help">Persistent queue storage for both syslog-ng and rsyslog.</small></div></div></fieldset>
+                <fieldset id="profile-tls"><legend>TLS certificates</legend><div class="field-grid"><div class="field"><label for="profile-caFile">CA certificate file</label><input id="profile-caFile" name="caFile" type="text" autocomplete="off" spellcheck="false" required></div><div class="field"><label for="profile-certFile">Host certificate file</label><input id="profile-certFile" name="certFile" type="text" autocomplete="off" spellcheck="false" required></div><div class="field"><label for="profile-keyFile">Private key file</label><input id="profile-keyFile" name="keyFile" type="text" autocomplete="off" spellcheck="false" required></div><div class="field"><label for="profile-allowedPeer">Allowed sender certificate (rsyslog TLS listener)</label><input id="profile-allowedPeer" name="allowedPeer" type="text" autocomplete="off" spellcheck="false" aria-describedby="profile-allowedPeer-help"><small id="profile-allowedPeer-help">Certificate name allowed for incoming senders, separate from the outgoing receiver.</small></div><div class="field"><label id="profile-peerName-label" for="profile-peerName">Receiver certificate name (rsyslog TLS forwarding)</label><input id="profile-peerName" name="peerName" type="text" autocomplete="off" spellcheck="false" aria-describedby="profile-peerName-help"><small id="profile-peerName-help">Expected certificate name of the outgoing receiver, separate from incoming senders.</small></div></div></fieldset>
+                <p id="profile-transport-note" class="helper"></p>
+              </div>
+              <div class="card-footer"><button type="submit" class="button button-primary">Generate deployment <svg class="icon"><use href="#icon-arrow"/></svg></button><button id="profile-reset" type="button" class="button button-ghost">Reset profile</button></div>
+            </form>
+            <div class="stack">
+              <div class="card">
+                <div class="card-heading"><div><span class="step-label">02 / REVIEW</span><h2>Deployment artifacts</h2></div><span id="deployment-state" class="badge">Ready to generate</span></div>
+                <div class="card-body"><label for="deployment-config">Generated configuration <span class="label-hint">editable</span></label><textarea id="deployment-config" class="code-editor" rows="16" spellcheck="false" autocomplete="off" placeholder="Generate a profile to create a candidate configuration."></textarea><div class="button-row"><button id="deployment-download" class="button button-secondary" type="button" disabled><svg class="icon"><use href="#icon-download"/></svg> Download config</button><button id="deployment-to-editor" class="button button-ghost" type="button" disabled>Open in editor <svg class="icon"><use href="#icon-arrow"/></svg></button></div><p class="helper">Opening in the editor replaces its current candidate. Download any edits you want to keep first.</p></div>
+              </div>
+              <div class="card">
+                <div class="card-heading"><div><span class="step-label">03 / TAKE TO YOUR HOST</span><h2>Deployment instructions</h2></div></div>
+                <div class="card-body"><label class="sr-only" for="deployment-commands">Editable deployment instructions</label><textarea id="deployment-commands" class="code-editor code-editor-short" rows="8" spellcheck="false" autocomplete="off" placeholder="Native commands will appear here. Nothing runs in this browser."></textarea><button id="deployment-commands-download" class="button button-secondary" type="button" disabled>Download instructions</button><ul id="deployment-notes" class="notes-list"></ul></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="configuration" class="view" aria-labelledby="configuration-title" hidden>
+          <div class="page-heading"><div><p class="eyebrow">REVIEW BEFORE YOU DEPLOY</p><h1 id="configuration-title">Configuration, with context.</h1><p>Inspect supported settings without losing the rest of your configuration.</p></div><span class="heading-tag">Candidate files only</span></div>
+          <div class="notice notice-warning"><div><strong>Assistance, not a native parser.</strong> Detection and guided edits cover a limited subset of syslog-ng and rsyslog syntax. Includes, modules, expressions, and version-specific features may not be understood. Always review the full candidate and validate on the target host.</div></div>
+          <div class="split-layout config-layout">
+            <div class="card">
+              <div class="card-heading"><div><span class="step-label">SOURCE OF TRUTH</span><h2>Raw configuration</h2></div><div class="file-button"><input id="config-file" class="file-input" type="file" aria-label="Import a configuration file"><label for="config-file" class="button button-secondary"><svg class="icon"><use href="#icon-upload"/></svg> Import file</label></div></div>
+              <div class="card-body"><div class="editor-meta"><span id="config-filename">Paste text or import a local file</span><span>In-memory only</span></div><label class="sr-only" for="config-raw">Raw candidate configuration</label><textarea id="config-raw" class="code-editor code-editor-large" rows="25" spellcheck="false" autocomplete="off" placeholder="# Paste a syslog-ng or rsyslog configuration here"></textarea><p class="helper">Imports are text only, up to 5 MiB. Importing or sending a deployment here replaces the current candidate.</p><div class="button-row"><button id="config-inspect" type="button" class="button button-primary"><svg class="icon"><use href="#icon-search"/></svg> Detect settings</button><button id="config-download" type="button" class="button button-secondary" disabled>Download candidate</button></div></div>
+            </div>
+            <div class="stack">
+              <form id="config-settings-form" class="card">
+                <div class="card-heading"><div><span class="step-label">GUIDED EDITING</span><h2>Recognized settings</h2></div><span id="config-engine" class="badge">Not inspected</span></div>
+                <div class="card-body"><p id="config-inspection-status" class="helper" role="status">Detect settings to begin. The raw editor is always available.</p><p id="config-syntax" class="syntax-summary"></p><fieldset id="config-settings" disabled><legend class="sr-only">Supported configuration settings</legend><div id="config-settings-fields" class="settings-list"><div class="empty-state compact"><svg class="icon"><use href="#icon-sliders"/></svg><h3>Keep the whole picture.</h3><p>Supported values appear here after inspection. Unrecognized text is preserved by guided edits.</p></div></div></fieldset><ul id="config-warnings" class="notes-list"></ul></div>
+                <div class="card-footer"><button id="config-apply" type="submit" class="button button-primary" disabled>Apply supported changes</button></div>
+              </form>
+              <div class="card validation-card"><div class="card-heading"><h2>Validate natively</h2><svg class="icon"><use href="#icon-terminal"/></svg></div><div class="card-body"><p>Save your candidate as <code>candidate.conf</code>. Run the command for your installed engine on a Linux host, then resolve any native diagnostics before deployment.</p><label for="config-validation">Native validation commands</label><textarea id="config-validation" class="code-editor code-editor-short" rows="4" readonly spellcheck="false">syslog-ng --syntax-only --cfgfile candidate.conf
+rsyslogd -N1 -f candidate.conf</textarea><p class="helper">Detection is not a guarantee of valid or universally supported native syntax. No commands are executed here.</p></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="explorer" class="view" aria-labelledby="explorer-title" hidden>
+          <div class="page-heading"><div><p class="eyebrow">LESS NOISE. MORE SIGNAL.</p><h1 id="explorer-title">Find the story in your logs.</h1><p>Search local syslog and JSON events, compare sources, and export what matters.</p></div><button id="load-demo" class="button button-secondary" type="button">Explore sample logs <svg class="icon"><use href="#icon-arrow"/></svg></button></div>
+          <div class="explorer-summary">
+            <div class="metric"><span>Events in memory</span><strong id="event-count">0</strong><small>100,000 event limit</small></div><div class="metric"><span>Imported sources</span><strong id="file-count">0</strong><small>Multiple files supported</small></div><div class="metric"><span>Source bytes loaded</span><strong id="byte-count">0 B</strong><small>50 MiB combined input limit</small></div><div class="metric metric-note"><svg class="icon"><use href="#icon-lock"/></svg><strong>Private by default</strong><small>No upload, persistence, or live tail. Decompress gzip files before importing.</small></div>
+          </div>
+          <div id="log-drop-zone" class="drop-zone">
+            <span class="drop-icon"><svg class="icon"><use href="#icon-upload"/></svg></span><div class="drop-copy"><strong>Drop log files into your workspace</strong><p>UTF-8 plain-text syslog or JSON lines, including extensionless files. Maximum 1 MiB per line. New imports append to this session.</p></div><div class="file-button"><input id="log-files" class="file-input" type="file" multiple aria-label="Choose one or more local log files"><label for="log-files" class="button button-primary">Choose files</label></div>
+          </div>
+          <div id="load-progress-panel" class="load-progress" hidden><div><span id="load-progress-text" role="status">Preparing import...</span><progress id="load-progress" max="100" value="0" aria-label="Log import progress"></progress></div><button id="load-cancel" type="button" class="button button-secondary">Cancel import</button></div>
+          <div id="load-notice" class="notice" role="status" hidden></div>
+          <div class="card query-card">
+            <div class="card-heading"><h2>Query workspace</h2><div class="query-actions"><button id="logs-clear" type="button" class="button button-ghost" disabled>Clear logs</button><span class="badge">Read-only investigation</span></div></div>
+            <div class="card-body">
+              <form id="query-form"><div class="query-input-row"><div class="field query-field"><label for="log-query">Search and transform events</label><div class="query-input-wrap"><svg class="icon"><use href="#icon-search"/></svg><input id="log-query" type="text" autocomplete="off" spellcheck="false" placeholder='severity_code&lt;=4 | stats count by host' aria-describedby="query-help query-error"></div></div><div class="field source-field"><label for="log-file-filter">Source file</label><select id="log-file-filter"><option value="">All sources</option></select></div><button id="query-run" class="button button-primary" type="submit">Run query</button></div></form>
+              <div id="query-error" class="inline-error" role="alert" hidden></div>
+              <div class="query-examples"><span>Try a query</span><button type="button" class="query-chip" data-query="severity_code&lt;=4">Warnings &amp; errors</button><button type="button" class="query-chip" data-query='("failed login" OR "Failed password")'>Failed sign-ins</button><button type="button" class="query-chip" data-query="* | stats count by host">Events by host</button><button type="button" class="query-chip" data-query="* | top 5 app">Top applications</button></div>
+              <details id="query-help" class="query-help"><summary>Query language reference</summary><div class="help-grid"><div><h3>Filter</h3><p>Free text, <code>"quoted phrases"</code>, <code>field=value</code>, or <code>field!=value</code>. Numeric comparisons use <code>&gt; &gt;= &lt; &lt;=</code>; severity names also support ordering, such as <code>severity&lt;=warning</code>. Timestamps support equality and wildcard matching, not ordering comparisons. Wildcards: <code>* ?</code>. Terms use implicit AND; combine with <code>AND OR NOT</code> and parentheses. An empty query includes every event.</p><p><code>app=sshd AND NOT host=lab-*</code></p></div><div><h3>Transform with pipes</h3><p><code>stats count [by field,...]</code><br><code>top [N] field</code><br><code>sort [-]field</code><br><code>head N</code><br><code>fields field,...</code></p><p>Common fields: timestamp, host, app, facility, facility_code, severity, severity_code, message, file, line, format. Extra scalar JSON fields may also be available. No JavaScript or arbitrary regular expressions.</p></div></div></details>
+            </div>
+          </div>
+          <div class="card results-card">
+            <div class="card-heading"><div><h2>Results <span id="result-count" class="count-pill">0</span></h2><p id="result-summary" class="helper" role="status">Import files or load the sample to start exploring.</p></div><div class="button-row no-margin"><button id="results-csv" type="button" class="button button-secondary" disabled><svg class="icon"><use href="#icon-download"/></svg> CSV</button><button id="results-json" type="button" class="button button-secondary" disabled>JSON</button></div></div>
+            <div id="results-empty" class="empty-state"><span class="empty-icon"><svg class="icon"><use href="#icon-search"/></svg></span><h3>Your next insight starts here.</h3><p>Add local logs or explore the curated sample. Events never leave your browser.</p></div>
+            <div id="results-table-wrap" class="table-scroll" tabindex="0" role="region" aria-label="Query results, horizontally scrollable" hidden><table id="results-table"><caption class="sr-only">Query result rows. Use View to inspect all fields and raw event text.</caption><thead id="results-head"></thead><tbody id="results-body"></tbody></table></div>
+            <div class="pagination"><span id="page-summary">100 rows per page</span><div class="button-row no-margin"><button id="page-prev" class="button button-secondary" type="button" disabled>Previous</button><button id="page-next" class="button button-secondary" type="button" disabled>Next</button></div></div>
+          </div>
+          <p class="footnote">Limits apply across all imports: 50 MiB of source data and 100,000 events. Decoding is incremental, but parsed objects use additional memory. At a limit, loading stops visibly and keeps completed events. Exports include all current result rows, not just the visible page. CSV cells beginning with spreadsheet formula characters are prefixed with an apostrophe.</p>
+        </section>
+
+        <section id="detections" class="view" aria-labelledby="detections-title" hidden>
+          <div class="page-heading"><div><p class="eyebrow">TURN PATTERNS INTO SIGNALS</p><h1 id="detections-title">Watch for what matters.</h1><p>Build literal-phrase swatchdog rules and preview matches against your loaded events.</p></div><span class="heading-tag">Echo alerts only</span></div>
+          <div class="split-layout">
+            <form id="detection-form" class="card">
+              <div class="card-heading"><div><span class="step-label">RULE BUILDER</span><h2>Detection phrases</h2></div></div>
+              <div class="card-body"><p id="preset-label" class="field-label">Start from a preset</p><div class="preset-grid" role="group" aria-labelledby="preset-label"><button type="button" class="preset-button" data-preset="login"><svg class="icon"><use href="#icon-lock"/></svg>Failed login</button><button type="button" class="preset-button" data-preset="firewall"><svg class="icon"><use href="#icon-shield"/></svg>Firewall deny</button><button type="button" class="preset-button" data-preset="privilege"><svg class="icon"><use href="#icon-terminal"/></svg>Privilege escalation</button></div><div class="field"><label for="detection-patterns">Literal phrases <span class="label-hint">one per line</span></label><textarea id="detection-patterns" rows="7" spellcheck="false" autocomplete="off" required>Failed password
+failed login
+authentication failure</textarea><small>Empty lines are ignored. Presets replace the phrase list. Characters are escaped for Perl regex in generated rules.</small></div><div class="field-grid"><div class="field"><label for="detection-throttle">Throttle (seconds)</label><input id="detection-throttle" type="number" value="60" min="0" max="86400" required><small>0 disables throttling.</small></div><div class="field checkbox-field"><label for="detection-ignore-case"><input id="detection-ignore-case" type="checkbox" checked> Ignore case</label><small>Applies to generated rules and preview.</small></div></div><div class="notice notice-subtle"><div><strong>Safe preview, literal matching.</strong> The browser checks raw event strings only. It never evaluates regular expressions, Perl, or alert actions. Counts do not simulate throttling.</div></div></div>
+              <div class="card-footer"><button type="submit" class="button button-primary">Generate swatch config</button><button id="detection-preview" type="button" class="button button-secondary">Preview matches</button></div>
+            </form>
+            <div class="stack"><div class="card"><div class="card-heading"><h2>Swatch configuration</h2><span id="detection-state" class="badge">Not generated</span></div><div class="card-body"><label for="detection-output">swatchrc <span class="label-hint">editable</span></label><textarea id="detection-output" class="code-editor" rows="13" spellcheck="false" autocomplete="off" placeholder="Generate literal-phrase echo alerts here."></textarea><button id="detection-download" type="button" class="button button-secondary" disabled><svg class="icon"><use href="#icon-download"/></svg> Download swatchrc</button><label for="detection-command" class="spaced-label">Run on your host</label><textarea id="detection-command" class="code-editor code-editor-short" rows="3" readonly spellcheck="false">swatchdog --config-file=swatchrc --tail-file=/var/log/remote/network.log</textarea><p class="helper">Requires swatchdog (swatch) and Perl installed on your host. Generated rules emit echo alerts only. You may manually edit the file for advanced Perl regex or actions; nothing is executed in this browser.</p></div></div><div class="card"><div class="card-heading"><h2>Match preview</h2><span id="detection-event-count" class="badge">0 loaded events</span></div><div class="card-body"><p id="detection-preview-summary" class="helper" role="status">Load logs in the explorer, then preview your phrases here.</p><div id="detection-preview-results" class="preview-results"></div></div></div></div>
+          </div>
+        </section>
+
+        <section id="maintenance" class="view" aria-labelledby="maintenance-title" hidden>
+          <div class="page-heading"><div><p class="eyebrow">KEEP HISTORY. CONTROL GROWTH.</p><h1 id="maintenance-title">Give your logs a lifecycle.</h1><p>Prepare native log rotation and a non-destructive archive of rotated files.</p></div><span class="heading-tag">Review before scheduling</span></div>
+          <div class="notice"><svg class="icon"><use href="#icon-archive"/></svg><div><strong>Archives copy rotated logs only.</strong> Active logs are excluded and the backup script does not delete source files. Logrotate enforces the rotation policy, which can remove old rotations after the configured count. Review both artifacts before using them.</div></div>
+          <div class="split-layout">
+            <form id="maintenance-form" class="card">
+              <div class="card-heading"><div><span class="step-label">RETENTION POLICY</span><h2>Rotation &amp; archive settings</h2></div></div>
+              <div class="card-body"><div class="field"><label for="maintenance-log-path">Active log file</label><input id="maintenance-log-path" name="logPath" value="/var/log/remote/network.log" type="text" autocomplete="off" spellcheck="false" required></div><div class="field"><label for="maintenance-archive-dir">Archive directory</label><input id="maintenance-archive-dir" name="archiveDir" value="/var/backups/logops" type="text" autocomplete="off" spellcheck="false" required></div><div class="field-grid"><div class="field"><label for="maintenance-rotate">Rotations to retain</label><input id="maintenance-rotate" name="rotate" type="number" min="1" max="3650" value="14" required><small>A file count, not a guarantee of days.</small></div><div class="field"><label for="maintenance-frequency">Rotation frequency</label><select id="maintenance-frequency" name="frequency"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></div><div class="field"><label for="maintenance-max-size">Maximum size</label><input id="maintenance-max-size" name="maxSize" type="text" value="100M" autocomplete="off" spellcheck="false" required><small>Native size value, such as 100M or 1G.</small></div><div class="field"><label for="maintenance-compression">Compression</label><select id="maintenance-compression" name="compression"><option value="gzip">gzip</option><option value="compress">compress (ncompress)</option><option value="none">None</option></select></div><div class="field"><label for="maintenance-engine">Service to reopen logs</label><select id="maintenance-engine" name="engine"><option value="syslog-ng">syslog-ng</option><option value="rsyslog">rsyslog</option></select></div></div><p class="helper">Native Linux tooling only. Install logrotate, Bash, the selected compression tools, and all commands required by the generated scripts. Size is checked when logrotate runs, not continuously.</p></div>
+              <div class="card-footer"><button type="submit" class="button button-primary">Generate maintenance files <svg class="icon"><use href="#icon-arrow"/></svg></button></div>
+            </form>
+            <div class="stack"><div class="card"><div class="card-heading"><h2>Logrotate policy</h2><span id="maintenance-state" class="badge">Not generated</span></div><div class="card-body"><label for="maintenance-logrotate">logops.logrotate <span class="label-hint">editable</span></label><textarea id="maintenance-logrotate" class="code-editor" rows="12" spellcheck="false" autocomplete="off" placeholder="Your native rotation policy will appear here."></textarea><button id="maintenance-logrotate-download" type="button" class="button button-secondary" disabled><svg class="icon"><use href="#icon-download"/></svg> Download logrotate policy</button></div></div><div class="card"><div class="card-heading"><h2>Rotated-log backup</h2><span class="badge">No source deletion</span></div><div class="card-body"><label for="maintenance-backup">logops-backup.sh <span class="label-hint">editable</span></label><textarea id="maintenance-backup" class="code-editor" rows="12" spellcheck="false" autocomplete="off" placeholder="Your Bash archive script will appear here."></textarea><button id="maintenance-backup-download" type="button" class="button button-secondary" disabled><svg class="icon"><use href="#icon-download"/></svg> Download backup script</button><ul id="maintenance-notes" class="notes-list"></ul><p class="helper">These are downloadable artifacts, not scheduled jobs. This page never rotates, compresses, archives, or removes files on your machine.</p></div></div></div>
+          </div>
+        </section>
+        <footer class="workspace-footer"><span>LogOps / Built for thoughtful operations</span><span>Local files. Explicit exports. No background connections.</span></footer>
+      </main>
+    </div>
+  </div>
+  <dialog id="row-dialog" aria-labelledby="row-dialog-title"><div class="dialog-heading"><div><p class="eyebrow">EVENT INSPECTOR</p><h2 id="row-dialog-title">Event details</h2></div><button id="row-dialog-close" type="button" class="button button-icon" aria-label="Close event details"><svg class="icon"><use href="#icon-close"/></svg></button></div><div class="dialog-body"><dl id="row-fields" class="row-fields"></dl><label for="row-raw">Raw event</label><textarea id="row-raw" class="code-editor" rows="9" readonly spellcheck="false"></textarea></div></dialog>
+  <div id="toast-region" class="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+  <script>/* Shared by the standalone HTML workbench and the Node/Bash console. */
+"use strict";
+const LogOps = (() => {
+  const severities = ["emerg", "alert", "crit", "err", "warning", "notice", "info", "debug"];
+  const facilities = ["kern", "user", "mail", "daemon", "auth", "syslog", "lpr", "news", "uucp", "cron", "authpriv", "ftp", "ntp", "audit", "alert", "clock", "local0", "local1", "local2", "local3", "local4", "local5", "local6", "local7"];
+  const defaultProfile = Object.freeze({
+    engine: "syslog-ng", role: "server", environment: "on-prem", transport: "tls", wireFormat: "rfc3164",
+    bind: "127.0.0.1", port: 6514, target: "logs.example.net", targetPort: 6514,
+    logPath: "/var/log/remote/network.log", queueDir: "/var/lib/logops",
+    caFile: "/etc/ssl/certs/logops-ca.pem", certFile: "/etc/ssl/certs/logops.pem",
+    keyFile: "/etc/ssl/private/logops.key", peerName: "logs.example.net", allowedPeer: "device.example.net"
+  });
+  function fail(message) { throw new Error(message); }
+  function choice(value, values, label) {
+    if (!values.includes(value)) fail(`${label} must be one of: ${values.join(", ")}`);
+    return value;
+  }
+  function integer(value, min, max, label) {
+    if (!/^\d+$/.test(String(value)) || Number(value) < min || Number(value) > max)
+      fail(`${label} must be an integer from ${min} to ${max}`);
+    return Number(value);
+  }
+  function host(value, label) {
+    if (typeof value !== "string" || !/^[a-zA-Z0-9_.:%-]+$/.test(value) || value.length > 253)
+      fail(`${label} must be a host name or IP address (without brackets)`);
+    return value;
+  }
+  function path(value, label) {
+    if (typeof value !== "string" || !/^\/[a-zA-Z0-9_./-]+$/.test(value) || value.includes("..") || value.endsWith("/"))
+      fail(`${label} must be an absolute Linux file/directory path using letters, digits, _, -, . and /; no ..`);
+    return value;
+  }
+  const quote = value => JSON.stringify(String(value));
+  const shellQuote = value => "'" + String(value).replace(/'/g, "'\\''") + "'";
+
+  // Token positions allow edits without reserializing or discarding unknown directives.
+  function configTokens(text) {
+    const tokens = [];
+    for (let i = 0; i < text.length;) {
+      if (/\s/.test(text[i])) { i++; continue; }
+      if (text[i] === "#" || text.slice(i, i + 2) === "//") {
+        while (i < text.length && text[i] !== "\n") i++;
+        continue;
+      }
+      if (text.slice(i, i + 2) === "/*") {
+        const end = text.indexOf("*/", i + 2);
+        if (end < 0) fail("Unterminated configuration comment");
+        i = end + 2; continue;
+      }
+      const start = i;
+      if (text[i] === '"' || text[i] === "'") {
+        const delimiter = text[i++];
+        let value = "";
+        while (i < text.length && text[i] !== delimiter) {
+          if (text[i] === "\\") {
+            if (i + 1 >= text.length) fail("Unterminated configuration escape");
+            value += text.slice(i, i + 2); i += 2;
+          } else value += text[i++];
+        }
+        if (i >= text.length) fail("Unterminated configuration string");
+        i++;
+        tokens.push({type: "string", value, start: start + 1, end: i - 1});
+      } else if (/[a-zA-Z0-9_$@.-]/.test(text[i])) {
+        while (i < text.length && /[a-zA-Z0-9_$@.:%-]/.test(text[i])) i++;
+        tokens.push({type: "word", value: text.slice(start, i), start, end: i});
+      } else {
+        i++;
+        tokens.push({type: "symbol", value: text[start], start, end: i});
+      }
+    }
+    return tokens;
+  }
+  function inspectConfig(text) {
+    if (typeof text !== "string") fail("Configuration must be text");
+    const tokens = configTokens(text);
+    const words = tokens.filter(t => t.type === "word").map(t => t.value.toLowerCase());
+    const ng = words.some(w => ["@version:", "@include", "source", "destination", "log", "options"].includes(w))
+      && tokens.some(t => t.value === "{" || t.value === "@version:");
+    const rs = words.some(w => ["module", "input", "action", "ruleset", "global", "$modload", "$inputtcpserverrun", "$udpserverrun", "$workdirectory"].includes(w))
+      || /^\s*(?:[a-z*][\w*,.!;-]*\.[\w*,.!;-]+\s+|\$[a-z])/im.test(text);
+    const engine = ng && rs ? "mixed" : ng ? "syslog-ng" : rs ? "rsyslog" : "unknown";
+    const settings = [];
+    const add = (token, label, kind) => {
+      // Escaped strings require daemon-specific decoding; leave them in the raw editor.
+      if (token.value.includes("\\")) return;
+      settings.push({id: `setting-${token.start}`, label, kind, value: token.value, start: token.start, end: token.end});
+    };
+    if (engine === "syslog-ng") {
+      const args = {port: "port", ip: "host", transport: "protocol", file: "path",
+        network: "host", syslog: "host", "ca-file": "path", "ca-dir": "path",
+        "cert-file": "path", "key-file": "path", "log-fifo-size": "number",
+        "flush-lines": "number", "time-reopen": "number"};
+      for (let i = 0; i + 2 < tokens.length; i++) {
+        const [name, open, value] = tokens.slice(i, i + 3);
+        if (name.type === "word" && Object.hasOwn(args, name.value) && open.value === "(" &&
+            ["word", "string"].includes(value.type) &&
+            (["port", "number"].includes(args[name.value]) ? /^\d+$/.test(value.value) : value.type === "string") &&
+            (args[name.value] !== "path" || value.value.startsWith("/"))) {
+          add(value, name.value, args[name.value]);
+        }
+      }
+    }
+    if (engine === "rsyslog") {
+      const attrs = {port: "port", address: "host", target: "host", file: "path",
+        protocol: "protocol", workdirectory: "path", "queue.size": "number",
+        "queue.filename": "text", "streamdriver.cafile": "path",
+        "streamdriver.certfile": "path", "streamdriver.keyfile": "path",
+        defaultnetstreamdrivercafile: "path", defaultnetstreamdrivercertfile: "path",
+        defaultnetstreamdriverkeyfile: "path"};
+      for (let i = 0; i + 2 < tokens.length; i++) {
+        const [name, equals, value] = tokens.slice(i, i + 3);
+        const key = name.value.toLowerCase();
+        if (name.type === "word" && Object.hasOwn(attrs, key) && equals.value === "=" && ["string", "word"].includes(value.type))
+          add(value, name.value, attrs[key]);
+      }
+      const legacy = /^\s*(\$(?:InputTCPServerRun|UDPServerRun|WorkDirectory|DefaultNetstreamDriverCAFile|DefaultNetstreamDriverCertFile|DefaultNetstreamDriverKeyFile))\s+([^\s#]+)(?=\s|$)/gim;
+      let match;
+      while ((match = legacy.exec(text))) {
+        const start = match.index + match[0].lastIndexOf(match[2]);
+        if (!tokens.some(t => t.start === start)) continue;
+        add({value: match[2], start, end: start + match[2].length}, match[1], /Run$/i.test(match[1]) ? "port" : "path");
+      }
+    }
+    const syntax = engine === "syslog-ng" ? "syslog-ng blocks" : engine === "rsyslog"
+      ? (words.some(w => ["input", "action", "module", "ruleset"].includes(w)) ? "RainerScript / possibly mixed legacy" : "Legacy rsyslog / syslog.conf") : engine;
+    const warnings = [
+      "Best-effort syntax detection, not a daemon validator. Unknown directives and includes are preserved, not interpreted.",
+      "Only recognized scalar settings are editable as fields. Use the raw editor for templates, filters, legacy selectors and vendor extensions.",
+      "Validate the complete configuration on the target daemon/version before deployment; modules and include files are not bundled."
+    ];
+    if (engine === "unknown" || engine === "mixed") warnings.unshift("Ambiguous syntax: structured editing is disabled; raw editing remains available.");
+    return {engine, syntax, settings: settings.sort((a, b) => a.start - b.start), warnings};
+  }
+  function editConfig(text, changes) {
+    const report = inspectConfig(text);
+    if (report.engine === "unknown" || report.engine === "mixed") fail("Cannot structurally edit unknown or mixed syntax");
+    const edits = [];
+    for (const [id, raw] of Object.entries(changes)) {
+      const setting = report.settings.find(s => s.id === id);
+      if (!setting) fail(`Unknown or stale setting: ${id}`);
+      const value = String(raw);
+      if (value === setting.value) continue;
+      if (setting.kind === "port") integer(value, 1, 65535, setting.label);
+      else if (setting.kind === "number") integer(value, 0, 2147483647, setting.label);
+      else if (setting.kind === "path") path(value, setting.label);
+      else if (setting.kind === "host") host(value, setting.label);
+      else if (setting.kind === "protocol") choice(value, report.engine === "rsyslog" ? ["tcp", "udp"] : ["tcp", "udp", "tls"], setting.label);
+      else if (!/^[a-zA-Z0-9_.-]+$/.test(value)) fail(`${setting.label} must be a simple identifier`);
+      edits.push({...setting, value});
+    }
+    return edits.sort((a, b) => b.start - a.start).reduce((out, e) => out.slice(0, e.start) + e.value + out.slice(e.end), text);
+  }
+  function generateDeployment(input = {}) {
+    const p = {...defaultProfile, ...input};
+    choice(p.engine, ["syslog-ng", "rsyslog"], "Engine");
+    choice(p.role, ["agent", "forwarder", "server"], "Role");
+    choice(p.environment, ["on-prem", "azure", "aws", "other"], "Environment");
+    choice(p.transport, ["tls", "tcp", "udp"], "Transport");
+    choice(p.wireFormat, ["rfc3164", "rfc5424"], "Wire format");
+    host(p.bind, "Listen address"); host(p.target, "Forwarding target");
+    integer(p.port, 1, 65535, "Listen port"); integer(p.targetPort, 1, 65535, "Forwarding port");
+    path(p.logPath, "Log path"); path(p.queueDir, "Queue directory");
+    if (p.transport === "tls") {
+      for (const key of ["caFile", "certFile", "keyFile"]) path(p[key], key);
+      host(p.peerName, "TLS peer name");
+      host(p.allowedPeer, "Allowed sender certificate");
+    }
+    const network = p.role !== "agent";
+    const forwarding = p.role !== "server";
+    const tls = p.transport === "tls";
+    const lines = [`# LogOps candidate: ${p.role} / ${p.environment}. Review before deployment.`];
+    const notes = [
+      "Generated Linux baseline: syslog-ng OSE 3.38+ or rsyslog 8.x. Older/vendor builds may need manual changes.",
+      "Treat this as a standalone candidate, not an extra include: merging into a distro config can duplicate sources/modules.",
+      `Selected wire format: ${p.wireFormat.toUpperCase()}. syslog-ng uses a matching network()/syslog() driver; rsyslog listeners auto-detect standard formats. Verify framing with your devices.`,
+      "Loopback binding is the safe default. For remote devices, select a private interface and restrict host/cloud firewalls to device subnets.",
+      "No changes are applied by this workbench. Keep a copy of the working config and validate with the target daemon before reload."
+    ];
+    if (p.engine === "syslog-ng") {
+      lines.push('@version: 3.38', '@include "scl.conf"', "", "options { keep-hostname(yes); chain-hostnames(no); };");
+      const tlsSource = tls ? ` tls(ca-file(${quote(p.caFile)}) cert-file(${quote(p.certFile)}) key-file(${quote(p.keyFile)}) peer-verify(required-trusted))` : "";
+      const driver = p.wireFormat === "rfc5424" ? "syslog" : "network";
+      lines.push(network
+        ? `source s_logops { ${driver}(ip(${quote(p.bind)}) ip-protocol(${p.bind.includes(":") ? 6 : 4}) port(${p.port}) transport(${quote(p.transport)})${tlsSource}); };`
+        : "source s_logops { system(); internal(); };");
+      const tlsDest = tls ? ` tls(ca-file(${quote(p.caFile)}) cert-file(${quote(p.certFile)}) key-file(${quote(p.keyFile)}) peer-verify(required-trusted))` : "";
+      const destination = forwarding
+        ? `${driver}(${quote(p.target)} ip-protocol(${p.target.includes(":") ? 6 : 4}) port(${p.targetPort}) transport(${quote(p.transport)})${tlsDest} disk-buffer(dir(${quote(p.queueDir)}) mem-buf-size(10485760) disk-buf-size(1073741824) reliable(yes)))`
+        : `file(${quote(p.logPath)} create-dirs(yes) perm(0640))`;
+      lines.push(`destination d_logops { ${destination}; };`, "log { source(s_logops); destination(d_logops); flags(flow-control); };");
+      if (tls && forwarding) notes.push("syslog-ng verifies the destination certificate against the forwarding target name. Set target to the certificate DNS name; the separate peer-name field is rsyslog-only.");
+      notes.push("syslog-ng address families are chosen independently: IPv6 literals use ip-protocol(6), other addresses use IPv4. For IPv6-only DNS names, edit ip-protocol(6) in the raw candidate.");
+    } else {
+      lines.push(`global(workDirectory=${quote(p.queueDir)}${tls ? ` DefaultNetstreamDriver="gtls" DefaultNetstreamDriverCAFile=${quote(p.caFile)} DefaultNetstreamDriverCertFile=${quote(p.certFile)} DefaultNetstreamDriverKeyFile=${quote(p.keyFile)}` : ""})`);
+      if (network) {
+        lines.push(p.transport === "udp" ? 'module(load="imudp")'
+          : `module(load="imtcp"${tls ? ' StreamDriver.Name="gtls" StreamDriver.Mode="1" StreamDriver.AuthMode="x509/name" PermittedPeer="' + p.allowedPeer + '"' : ""})`);
+      } else {
+        lines.push('module(load="imuxsock")', "# Do not also load imjournal for the same messages without deduplication.");
+      }
+      const action = forwarding
+        ? `action(type="omfwd" target=${quote(p.target)} port=${quote(p.targetPort)} protocol=${quote(p.transport === "udp" ? "udp" : "tcp")}${tls ? ` StreamDriver="gtls" StreamDriverMode="1" StreamDriverAuthMode="x509/name" StreamDriverPermittedPeers=${quote(p.peerName)}` : ""} template=${quote(p.wireFormat === "rfc5424" ? "RSYSLOG_SyslogProtocol23Format" : "RSYSLOG_TraditionalForwardFormat")}${p.wireFormat === "rfc5424" && p.transport !== "udp" ? ' TCP_Framing="octet-counted"' : ""} action.resumeRetryCount="-1" queue.type="LinkedList" queue.filename="logops-forward" queue.maxDiskSpace="1g" queue.saveOnShutdown="on")`
+        : `action(type="omfile" file=${quote(p.logPath)} createDirs="on" fileCreateMode="0640")`;
+      if (network) {
+        lines.push(`ruleset(name="logops_ingest") {\n  ${action}\n}`,
+          `input(type=${quote(p.transport === "udp" ? "imudp" : "imtcp")} address=${quote(p.bind)} port=${quote(p.port)} ruleset="logops_ingest")`);
+      } else lines.push(action);
+      if (tls) notes.push("Install the rsyslog GnuTLS module (commonly rsyslog-gnutls). Allowed sender identifies incoming certificate names; peer name identifies the destination certificate. For multiple permitted senders, edit PermittedPeer as an array.");
+    }
+    if (tls) notes.push("Mutual TLS is enabled: distribute a CA and signed certificates/private keys with correct SANs, permissions and expiry monitoring. Devices without TLS need an isolated relay.");
+    else notes.push(`${p.transport.toUpperCase()} is unencrypted. Use only on trusted segmented networks or inside a VPN; UDP has no delivery acknowledgement or backpressure.`);
+    if (p.environment === "azure") notes.push("Azure: run on a Linux VM, use a private NIC/VNet, and allow the selected port only from known device/VPN/ExpressRoute subnets in the NSG. This does not provision Azure resources or configure Azure Monitor/DCR ingestion.");
+    if (p.environment === "aws") notes.push("AWS: run on a Linux EC2 instance and restrict security groups/NACLs to device subnets through private connectivity. This does not provision AWS resources or send to CloudWatch.");
+    if (p.environment === "other") notes.push("Cloud: use a Linux VM/private network, source-restricted firewall rules and persistent storage. The generated daemon config is provider-neutral.");
+    if (forwarding) notes.push("Provision persistent writable queue storage and monitor disk usage. Buffers are bounded and do not guarantee loss-free delivery under every failure.");
+    const config = lines.join("\n") + "\n";
+    const validator = p.engine === "syslog-ng" ? "syslog-ng --syntax-only --cfgfile" : "rsyslogd -N1 -f";
+    const commands = `# Save the candidate as candidate.conf. Run on the intended Linux host.\n# Install the daemon and required modules through your distribution first.\n# Check includes, service user permissions, certificates and firewall rules.\nsudo ${validator} ./candidate.conf\n\n# Only after validation: manually merge/install into the distro's service config.\n# Do NOT run both syslog daemons against the same sockets/ports.\n# Use your distribution's documented reload/restart procedure.\n# Check service status and send test messages from every device class.\n`;
+    return {config, notes, commands};
+  }
+
+  function parseLog(raw, file = "", line = 1) {
+    const event = {timestamp: "", host: "", app: "", facility: "", facility_code: null,
+      severity: "", severity_code: null, message: raw, raw, file, line, format: "text"};
+    const priority = raw.match(/^<(\d{1,3})>/);
+    if (priority && Number(priority[1]) <= 191) {
+      event.facility_code = Math.floor(Number(priority[1]) / 8);
+      event.severity_code = Number(priority[1]) % 8;
+      event.facility = facilities[event.facility_code]; event.severity = severities[event.severity_code];
+    }
+    const modern = raw.match(/^(?:<\d{1,3}>)?1 (\S+) (\S+) (\S+) (\S+) (\S+) (.*)$/);
+    const legacy = raw.match(/^(?:<\d{1,3}>)?([A-Z][a-z]{2}\s+\d{1,2} \d{2}:\d{2}:\d{2}) ([^\s]+) (.*)$/);
+    if (modern) {
+      [, event.timestamp, event.host, event.app, event.pid, event.msgid] = modern;
+      let rest = modern[6], i = 0;
+      if (rest[0] === "-") i = 1;
+      else while (rest[i] === "[") {
+        let inString = false;
+        i++;
+        for (; i < rest.length; i++) {
+          if (rest[i] === "\\" && inString) { i++; continue; }
+          if (rest[i] === '"') inString = !inString;
+          if (rest[i] === "]" && !inString) { i++; break; }
+        }
+      }
+      event.structured_data = rest.slice(0, i);
+      event.message = rest.slice(i).replace(/^ /, "");
+      event.format = "RFC5424";
+    } else if (legacy) {
+      event.timestamp = legacy[1]; event.host = legacy[2]; event.message = legacy[3]; event.format = "RFC3164";
+      const tag = event.message.match(/^([^:\s[]+)(?:\[(\d+)\])?:\s?(.*)$/);
+      if (tag) { event.app = tag[1]; event.pid = tag[2] || ""; event.message = tag[3]; }
+    } else if (/^\s*\{/.test(raw)) {
+      let data;
+      try { data = JSON.parse(raw); }
+      catch (error) { if (!(error instanceof SyntaxError)) throw error; }
+      if (data && !Array.isArray(data) && typeof data === "object") {
+        for (const [key, value] of Object.entries(data)) {
+          if (!["raw", "file", "line", "format", "__proto__", "constructor", "prototype"].includes(key) &&
+              (typeof value === "string" || typeof value === "number" || typeof value === "boolean"))
+            Object.defineProperty(event, key, {value, writable: true, enumerable: true, configurable: true});
+        }
+        event.format = "JSON";
+      }
+    }
+    const pairs = /(?:^|\s)([a-zA-Z_][\w.-]*)=(?:"([^"]*)"|'([^']*)'|([^\s]+))/g;
+    let pair;
+    while ((pair = pairs.exec(String(event.message)))) {
+      if (!Object.hasOwn(event, pair[1]) && !["__proto__", "constructor", "prototype"].includes(pair[1]))
+        Object.defineProperty(event, pair[1], {value: pair[2] ?? pair[3] ?? pair[4], enumerable: true});
+    }
+    return event;
+  }
+  function queryTokens(query) {
+    const tokens = [];
+    for (let i = 0; i < query.length;) {
+      if (/\s/.test(query[i])) { i++; continue; }
+      if ('()|,=<>!'.includes(query[i])) {
+        let value = query[i++];
+        if ("<>!=".includes(value) && query[i] === "=") value += query[i++];
+        if (value === "!") fail("Use != or NOT");
+        tokens.push({value, quoted: false}); continue;
+      }
+      if (query[i] === '"' || query[i] === "'") {
+        const delimiter = query[i++]; let value = "";
+        while (i < query.length && query[i] !== delimiter) {
+          if (query[i] === "\\" && [delimiter, "\\"].includes(query[i + 1])) i++;
+          value += query[i++];
+        }
+        if (i >= query.length) fail("Unterminated search phrase");
+        i++; tokens.push({value, quoted: true}); continue;
+      }
+      const start = i;
+      while (i < query.length && !/[\s()|,=<>!]/.test(query[i])) i++;
+      tokens.push({value: query.slice(start, i), quoted: false});
+    }
+    return tokens;
+  }
+  const fieldName = value => {
+    if (!/^[a-zA-Z_][\w.-]*$/.test(value) || ["__proto__", "prototype", "constructor"].includes(value)) fail(`Invalid field name: ${value}`);
+    return value;
+  };
+  const scalar = (row, key) => Object.hasOwn(row, key) ? row[key] : "";
+  function wildcard(value, pattern) {
+    // Iterative glob matching avoids user-supplied regular expressions and regex backtracking.
+    value = String(value).toLowerCase(); pattern = String(pattern).toLowerCase();
+    let i = 0, j = 0, star = -1, saved = 0;
+    while (i < value.length) {
+      if (pattern[j] === "?" || pattern[j] === value[i]) { i++; j++; }
+      else if (pattern[j] === "*") { star = j++; saved = i; }
+      else if (star !== -1) { j = star + 1; i = ++saved; }
+      else return false;
+    }
+    while (pattern[j] === "*") j++;
+    return j === pattern.length;
+  }
+  function searchLogs(events, query = "") {
+    if (query.length > 8192) fail("Query limit is 8192 characters");
+    const tokens = queryTokens(query);
+    let pos = 0, depth = 0;
+    const is = value => tokens[pos] && !tokens[pos].quoted && tokens[pos].value.toUpperCase() === value;
+    const take = () => tokens[pos++];
+    function atom() {
+      if (++depth > 64) fail("Search nesting limit is 64");
+      let result;
+      if (is("NOT")) { take(); const inner = atom(); result = row => !inner(row); }
+      else if (is("(")) { take(); result = expression(); if (!is(")")) fail("Missing closing parenthesis"); take(); }
+      else {
+        const token = take();
+        if (!token || (!token.quoted && ["AND", "OR", ")", "|", "=", "!=", ">", "<", ">=", "<=", ","].includes(token.value.toUpperCase()))) fail("Expected a search term");
+        if (tokens[pos] && !tokens[pos].quoted && ["=", "!=", ">", "<", ">=", "<="].includes(tokens[pos].value)) {
+          const field = fieldName(token.value), op = take().value, value = take();
+          if (!value || (!value.quoted && ["|", "(", ")", ",", "AND", "OR", "NOT", "=", "!=", "<", ">", "<=", ">="].includes(value.value.toUpperCase()))) fail("Expected a field value");
+          result = row => {
+            if (op === "=" || op === "!=") {
+              if (!Object.hasOwn(row, field)) return op === "!=";
+              const matches = wildcard(scalar(row, field), value.value);
+              return op === "=" ? matches : !matches;
+            }
+            let a = scalar(row, field), b = value.value;
+            if (field === "severity") { a = severities.indexOf(String(a)); b = severities.indexOf(b); if (a < 0 || b < 0) return false; }
+            else { if (a === "" || a === null || !Number.isFinite(Number(a)) || !Number.isFinite(Number(b))) return false; a = Number(a); b = Number(b); }
+            return op === ">" ? a > b : op === "<" ? a < b : op === ">=" ? a >= b : a <= b;
+          };
+        } else result = row => wildcard(row.raw, `*${token.value}*`);
+      }
+      depth--; return result;
+    }
+    function conjunction() {
+      const nodes = [atom()];
+      while (pos < tokens.length && !is("OR") && !is(")") && !is("|")) {
+        if (is("AND")) take();
+        nodes.push(atom());
+      }
+      return row => nodes.every(node => node(row));
+    }
+    function expression() {
+      const nodes = [conjunction()];
+      while (is("OR")) { take(); nodes.push(conjunction()); }
+      return row => nodes.some(node => node(row));
+    }
+    const predicate = !tokens.length || is("|") ? () => true : expression();
+    if (pos < tokens.length && !is("|")) fail(`Unexpected search token: ${tokens[pos].value}`);
+    let rows = events.filter(predicate);
+    const matched = rows.length;
+    let columns = ["timestamp", "host", "app", "severity", "message", "file", "line"];
+    while (pos < tokens.length) {
+      if (!is("|")) fail("Expected a pipeline separator");
+      take();
+      const stage = [];
+      while (pos < tokens.length && !is("|")) stage.push(take().value);
+      const command = (stage.shift() || "").toLowerCase();
+      const fields = values => {
+        const value = values.join(" ");
+        if (!value || /(?:^|,)\s*(?:,|$)/.test(value)) fail("Expected field names");
+        return value.split(/[\s,]+/).filter(Boolean).map(fieldName);
+      };
+      if (command === "stats") {
+        if ((stage.shift() || "").toLowerCase() !== "count") fail("Supported aggregation: stats count [by field,...]");
+        let keys = [];
+        if (stage.length) {
+          if (stage.shift().toLowerCase() !== "by") fail("Expected 'by' after stats count");
+          keys = fields(stage);
+        }
+        if (keys.includes("count")) fail("Cannot group by reserved output field count");
+        const groups = new Map();
+        for (const row of rows) {
+          const values = keys.map(key => scalar(row, key)), id = JSON.stringify(values);
+          if (!groups.has(id)) groups.set(id, {...Object.fromEntries(keys.map((key, i) => [key, values[i]])), count: 0});
+          groups.get(id).count++;
+        }
+        rows = keys.length === 0 ? [{count: rows.length}] : [...groups.values()];
+        columns = [...keys, "count"];
+      } else if (command === "top") {
+        const limit = /^\d+$/.test(stage[0] || "") ? integer(stage.shift(), 1, 100000, "Top limit") : 10;
+        if (stage.length !== 1) fail("Use top [N] field");
+        const key = fieldName(stage[0]);
+        if (["count", "percent"].includes(key)) fail("Cannot top reserved output field count or percent");
+        const counts = new Map();
+        rows.forEach(row => { const value = scalar(row, key); counts.set(value, (counts.get(value) || 0) + 1); });
+        const total = rows.length;
+        rows = [...counts].map(([value, count]) => ({[key]: value, count, percent: Number((count * 100 / total).toFixed(2))}))
+          .sort((a, b) => b.count - a.count).slice(0, limit);
+        columns = [key, "count", "percent"];
+      } else if (command === "sort") {
+        if (stage.length !== 1) fail("Use sort [-]field");
+        const descending = stage[0].startsWith("-"), key = fieldName(stage[0].replace(/^[-+]/, ""));
+        rows.sort((a, b) => {
+          const av = scalar(a, key), bv = scalar(b, key);
+          const compared = typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv));
+          return descending ? -compared : compared;
+        });
+      } else if (command === "head") {
+        if (stage.length !== 1) fail("Use head N");
+        rows = rows.slice(0, integer(stage[0], 0, 1000000, "Head limit"));
+      } else if (command === "fields") {
+        columns = fields(stage);
+        rows = rows.map(row => Object.fromEntries(columns.map(key => [key, scalar(row, key)])));
+      } else fail(`Unsupported pipeline command: ${command || "(empty)"}`);
+    }
+    return {rows, columns, total: rows.length, matched, scanned: events.length};
+  }
+  function generateSwatch({patterns = [], ignoreCase = true, throttle = 60} = {}) {
+    integer(throttle, 0, 86400, "Throttle seconds");
+    if (!Array.isArray(patterns) || !patterns.length) fail("Add at least one literal detection phrase");
+    const escaped = patterns.map(p => {
+      if (typeof p !== "string" || !p.trim() || /[\r\n\0]/.test(p) || p.length > 512) fail("Detection phrases must be nonempty single lines, up to 512 characters");
+      return p.replace(/[\\^$@.*+?()[\]{}|/]/g, "\\$&");
+    });
+    return `# Literal phrases escaped for Perl; review before running swatchdog.\n# Alerts go to stdout.${Number(throttle) ? " One shared rate limit covers all phrases in this block." : " Rate limiting is disabled."}\nwatchfor /(?:${escaped.join("|")})/${ignoreCase ? "i" : ""}\n${Number(throttle) ? `    threshold track_by=logops,type=limit,count=1,seconds=${throttle}\n` : ""}    echo\n`;
+  }
+  function csvCell(value) {
+    let text = String(value ?? "");
+    // Prevent log text from becoming a spreadsheet formula when an export is opened.
+    if (/^\s*[=+\-@]/.test(text) || /^[\t\r\n]/.test(text)) text = "'" + text;
+    return '"' + text.replace(/"/g, '""') + '"';
+  }
+  function generateMaintenance(input = {}) {
+    const p = {logPath: defaultProfile.logPath, archiveDir: "/var/backups/logops", rotate: 14,
+      frequency: "daily", maxSize: "100M", compression: "gzip", engine: "syslog-ng", ...input};
+    path(p.logPath, "Log path"); path(p.archiveDir, "Archive directory");
+    integer(p.rotate, 1, 3650, "Retention count");
+    choice(p.frequency, ["daily", "weekly", "monthly"], "Rotation frequency");
+    choice(p.compression, ["gzip", "compress", "none"], "Compression");
+    choice(p.engine, ["syslog-ng", "rsyslog"], "Engine");
+    if (!/^[1-9]\d{0,8}[kMG]?$/.test(p.maxSize)) fail("Maximum size must be a positive logrotate size such as 100M");
+    const compress = p.compression === "none" ? "    nocompress" : p.compression === "gzip"
+      ? "    compress\n    delaycompress\n    compresscmd /usr/bin/gzip\n    uncompresscmd /usr/bin/gunzip\n    compressext .gz\n    compressoptions -6" : "    compress\n    delaycompress\n    compresscmd /usr/bin/compress\n    uncompresscmd /usr/bin/uncompress\n    compressext .Z\n    compressoptions -c";
+    const logrotate = `${p.logPath} {\n    ${p.frequency}\n    maxsize ${p.maxSize}\n    rotate ${p.rotate}\n    missingok\n    notifempty\n    nodateext\n    noolddir\n    nocopytruncate\n    nocreate\n${compress}\n    sharedscripts\n    postrotate\n        /bin/systemctl kill --kill-who=main --signal=HUP ${p.engine}.service\n    endscript\n}\n`;
+    const basePattern = p.logPath.slice(p.logPath.lastIndexOf("/") + 1).replace(/\./g, "\\.");
+    const backup = `#!/usr/bin/env bash\nset -euo pipefail\numask 077\n# GNU/Linux: archive rotated siblings only, never the active log. No deletion.\nsource_log=${shellQuote(p.logPath)}\narchive_dir=${shellQuote(p.archiveDir)}\nfor tool in find tar mktemp date${p.compression === "gzip" ? " gzip" : p.compression === "compress" ? " compress" : ""}; do\n    command -v "$tool" >/dev/null || { printf 'Missing tool: %s\\n' "$tool" >&2; exit 1; }\ndone\nmkdir -p -- "$archive_dir"\nsource_dir=$(dirname -- "$source_log")\nlist=$(mktemp)\narchive=''\ncleanup() {\n    rm -f -- "$list"\n    if [[ -n "$archive" ]]; then rm -f -- "$archive"; fi\n}\ntrap cleanup EXIT\ncd -- "$source_dir"\n# Numeric rotation suffixes only; exclude active or unrelated files.\nfind . -maxdepth 1 -type f -regextype posix-extended -regex ${shellQuote(`./${basePattern}\\.[0-9]+(\\.gz|\\.Z)?`)} -print0 > "$list"\nif [[ ! -s "$list" ]]; then printf 'No rotated logs to archive.\\n'; exit 0; fi\nstamp=$(date -u +%Y%m%dT%H%M%SZ)\narchive=$(mktemp "$archive_dir/logops-$stamp-XXXXXX${p.compression === "gzip" ? ".tar.gz" : p.compression === "compress" ? ".tar.Z" : ".tar"}")\n${p.compression === "gzip" ? 'tar --null --verbatim-files-from --files-from="$list" -czf "$archive"' : p.compression === "compress" ? 'tar --null --verbatim-files-from --files-from="$list" -cf - | compress -c > "$archive"' : 'tar --null --verbatim-files-from --files-from="$list" -cf "$archive"'}\nprintf 'Created %s\\n' "$archive"\narchive=''\n`;
+    return {logrotate, backup, notes: [
+      "Review service names and the HUP reopen hook for your distro. This template requires systemd and a daemon that recreates its own log file (nocreate). No copytruncate race is introduced.",
+      "Run logrotate --debug on the candidate first. maxsize is checked only when logrotate runs; schedule it frequently enough.",
+      "The backup uses GNU find/tar, creates a unique private archive, and does not delete originals. Schedule outside rotation to avoid concurrent renames/compression.",
+      "Backups include only numeric rotated siblings of the chosen file, not the active log. Repeated runs intentionally create independent snapshots; retention/off-site transfer must be managed separately.",
+      "Traditional compress requires the distribution's ncompress package. Confirm binary paths for logrotate. Do not use this Linux template for native Windows services."
+    ]};
+  }
+  return {defaultProfile, inspectConfig, editConfig, generateDeployment, parseLog, searchLogs, generateSwatch, generateMaintenance, csvCell};
+})();
+if (typeof module !== "undefined" && module.exports) module.exports = LogOps;
+</script>
+  <script>(function () {
+  "use strict";
+
+  const $ = (id) => document.getElementById(id);
+  const core = typeof LogOps === "undefined" ? null : LogOps;
+  const MAX_BYTES = 50 * 1024 * 1024;
+  const MAX_EVENTS = 100000;
+  const MAX_CONFIG_BYTES = 5 * 1024 * 1024;
+  const MAX_LINE_BYTES = 1024 * 1024;
+  const encoder = new TextEncoder();
+  const PAGE_SIZE = 100;
+  const nextTask = () => new Promise((resolve) => setTimeout(resolve, 0));
+  const number = (value) => Number(value).toLocaleString();
+  const messageOf = (error) => error instanceof Error ? error.message : String(error);
+  const profileKeys = [
+    "engine", "role", "environment", "transport", "wireFormat", "bind", "port", "target",
+    "targetPort", "logPath", "queueDir", "caFile", "certFile", "keyFile", "peerName", "allowedPeer"
+  ];
+  const viewNames = {
+    deployment: "Deployment",
+    configuration: "Configuration",
+    explorer: "Log explorer",
+    detections: "Detections",
+    maintenance: "Retention & archive"
+  };
+  const state = {
+    events: [],
+    sources: [],
+    bytes: 0,
+    load: null,
+    result: null,
+    page: 0,
+    inspection: null,
+    settingInputs: [],
+    inspectionStale: true,
+    deploymentEngine: null,
+    previewVersion: 0,
+    previewBusy: false
+  };
+  let toastTimer;
+  document.querySelectorAll("svg.icon").forEach((icon) => icon.setAttribute("aria-hidden", "true"));
+
+  function element(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = String(text);
+    return node;
+  }
+
+  function notify(message, isError = false) {
+    clearTimeout(toastTimer);
+    const region = $("toast-region");
+    region.setAttribute("aria-live", isError ? "assertive" : "polite");
+    const toast = element("div", isError ? "toast toast-error" : "toast");
+    const dismiss = element("button", "", "Dismiss");
+    dismiss.type = "button";
+    dismiss.setAttribute("aria-label", "Dismiss notification");
+    dismiss.addEventListener("click", () => region.replaceChildren());
+    toast.append(element("span", "", message), dismiss);
+    region.replaceChildren(toast);
+    if (!isError) toastTimer = setTimeout(() => region.replaceChildren(), 7000);
+  }
+
+  function on(id, eventName, action) {
+    $(id).addEventListener(eventName, (event) => {
+      try {
+        const pending = action(event);
+        if (pending && typeof pending.catch === "function") {
+          pending.catch((error) => notify(messageOf(error), true));
+        }
+      } catch (error) {
+        notify(messageOf(error), true);
+      }
+    });
+  }
+
+  function setNotes(id, notes) {
+    $(id).replaceChildren(...notes.map((note) => element("li", "", note)));
+  }
+
+  function bytesLabel(value) {
+    if (value < 1024) return number(value) + " B";
+    if (value < 1024 * 1024) return (value / 1024).toFixed(1) + " KiB";
+    return (value / (1024 * 1024)).toFixed(1) + " MiB";
+  }
+
+  function textValue(value) {
+    if (value === null || value === undefined) return "";
+    return typeof value === "object" ? JSON.stringify(value) : String(value);
+  }
+
+  function download(content, filename, type = "text/plain;charset=utf-8") {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const link = element("a");
+    link.href = url;
+    link.download = filename;
+    document.body.append(link);
+    try {
+      link.click();
+    } finally {
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }
+    notify("Download prepared: " + filename + ". Your browser controls where it is saved.");
+  }
+
+  function downloadEditor(id, filename) {
+    const content = $(id).value;
+    if (!content.trim()) throw new Error("There is no content to download. Generate or enter a candidate first.");
+    download(content, filename);
+  }
+
+  function bindOutput(editorId, buttonIds, badgeId) {
+    on(editorId, "input", () => {
+      buttonIds.forEach((id) => { $(id).disabled = !$(editorId).value.trim(); });
+      if (badgeId) $(badgeId).textContent = "Manually edited";
+    });
+  }
+
+  function showView(name, focus = false) {
+    if (!Object.prototype.hasOwnProperty.call(viewNames, name)) name = "deployment";
+    document.querySelectorAll(".view").forEach((view) => { view.hidden = view.id !== name; });
+    document.querySelectorAll("[data-view]").forEach((link) => {
+      if (link.dataset.view === name) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+    $("current-view-name").textContent = viewNames[name];
+    document.title = "LogOps | " + viewNames[name];
+    if (focus) $("main-content").focus({ preventScroll: true });
+  }
+
+  document.querySelectorAll("[data-view]").forEach((link) => {
+    link.addEventListener("click", () => showView(link.dataset.view, true));
+  });
+  window.addEventListener("hashchange", () => {
+    if (location.hash !== "#main-content") showView(location.hash.slice(1));
+  });
+  showView(location.hash.slice(1));
+
+  const requiredMethods = ["generateDeployment", "inspectConfig", "editConfig", "parseLog",
+    "searchLogs", "generateSwatch", "generateMaintenance", "csvCell"];
+  if (!core || !core.defaultProfile || requiredMethods.some((key) => typeof core[key] !== "function")) {
+    $("runtime-error").hidden = false;
+    $("runtime-error").textContent = "The LogOps shared core is missing or incomplete. Open the bundled index.html, not the source template. Rebuild the page if this problem persists.";
+    document.querySelectorAll("main button, main input, main select, main textarea").forEach((control) => {
+      control.disabled = true;
+    });
+    return;
+  }
+
+  // Deployment artifacts are snapshots; changing a profile never rewrites manual edits.
+  function updateProfile() {
+    const engine = $("profile-engine").value;
+    const role = $("profile-role").value;
+    const tls = $("profile-transport").value === "tls";
+    $("profile-listener").disabled = role === "agent";
+    $("profile-remote").disabled = role === "server";
+    $("profile-logPath").disabled = role !== "server";
+    $("profile-tls").disabled = !tls;
+    $("profile-wire-format-note").textContent = engine === "syslog-ng"
+      ? "syslog-ng uses network() for RFC3164 and syslog() for RFC5424. A listener expects the selected format; it does not auto-detect both."
+      : "rsyslog inputs auto-detect standard syslog formats. Forwarding uses the selected wire format, template, and framing.";
+    $("profile-peerName").disabled = !tls || engine !== "rsyslog" || role === "server";
+    $("profile-allowedPeer").disabled = !tls || engine !== "rsyslog" || role === "agent";
+    $("profile-peerName-help").textContent = engine !== "rsyslog"
+      ? "Not used by syslog-ng. Outgoing TLS verifies the receiver certificate against the target host."
+      : role === "server"
+        ? "Not used by a server. Applies to outgoing agent and forwarder connections."
+        : "Match the outgoing receiver's certificate name. This is independent of the allowed sender certificate.";
+    $("profile-allowedPeer-help").textContent = engine !== "rsyslog"
+      ? "Used only by rsyslog TLS listeners; not used by syslog-ng."
+      : role === "agent"
+        ? "Not used by an agent, which has no network listener."
+        : "Allow this certificate name for incoming senders, independently of the outgoing receiver. Use the raw editor for more specific sender policies.";
+    $("profile-flow").textContent = {
+      server: "Network sources  ->  Collector  ->  Local log file",
+      forwarder: "Network sources  ->  Relay  ->  Remote collector",
+      agent: "Local system logs  ->  Agent  ->  Remote collector"
+    }[role];
+    $("profile-transport-note").textContent = tls
+      ? "TLS protects transport, not the syslog message format. Plan for RFC3164/RFC5424 compatibility and framing at both ends. Provision the required CA, certificate, and private key files; verify trust and peer names on your hosts."
+      : "TCP and UDP are unencrypted. Confirm RFC3164/RFC5424 compatibility and framing at both ends. UDP can lose or reorder messages; use only where appropriate for your network.";
+    if (tls && engine === "syslog-ng" && role !== "server") {
+      $("profile-transport-note").textContent += " For syslog-ng, the target host must match the outgoing collector's certificate identity.";
+    }
+  }
+
+  function resetProfile() {
+    profileKeys.forEach((key) => { $("profile-" + key).value = textValue(core.defaultProfile[key]); });
+    updateProfile();
+    if (state.deploymentEngine) $("deployment-state").textContent = "Profile reset - regenerate";
+  }
+
+  on("deployment-form", "input", () => {
+    updateProfile();
+    if (state.deploymentEngine) $("deployment-state").textContent = "Profile changed - regenerate";
+  });
+  on("deployment-form", "change", updateProfile);
+  on("profile-reset", "click", () => { resetProfile(); notify("Deployment profile reset to the shared defaults."); });
+  on("deployment-form", "submit", (event) => {
+    event.preventDefault();
+    if (!$("deployment-form").reportValidity()) return;
+    const profile = { ...core.defaultProfile };
+    profileKeys.forEach((key) => {
+      profile[key] = key === "port" || key === "targetPort"
+        ? Number($("profile-" + key).value)
+        : $("profile-" + key).value;
+    });
+    const output = core.generateDeployment(profile);
+    $("deployment-config").value = output.config;
+    $("deployment-commands").value = output.notes.map((note) => "# " + note).join("\n\n") + "\n\n" + output.commands;
+    setNotes("deployment-notes", output.notes);
+    state.deploymentEngine = profile.engine;
+    $("deployment-state").textContent = "Generated / " + profile.engine;
+    $("deployment-download").disabled = !output.config.trim();
+    $("deployment-to-editor").disabled = !output.config.trim();
+    $("deployment-commands-download").disabled = !output.commands.trim();
+    notify("Deployment artifacts generated. Review them and validate on your host before deployment.");
+  });
+  bindOutput("deployment-config", ["deployment-download", "deployment-to-editor"], "deployment-state");
+  bindOutput("deployment-commands", ["deployment-commands-download"]);
+  on("deployment-download", "click", () => downloadEditor("deployment-config", (state.deploymentEngine || "syslog") + "-candidate.conf"));
+  on("deployment-commands-download", "click", () => downloadEditor("deployment-commands", "deployment-instructions.txt"));
+
+  function invalidateInspection(message) {
+    state.inspectionStale = true;
+    $("config-settings").disabled = true;
+    $("config-apply").disabled = true;
+    $("config-download").disabled = !$("config-raw").value.trim();
+    $("config-inspection-status").textContent = message;
+    if (state.inspection) $("config-engine").textContent = "Stale / inspect again";
+  }
+
+  function inspectCandidate(announce = true) {
+    const source = $("config-raw").value;
+    invalidateInspection("Inspection is required before applying supported changes.");
+    state.inspection = null;
+    state.settingInputs = [];
+    $("config-engine").textContent = "Not inspected";
+    $("config-syntax").textContent = "";
+    $("config-settings-fields").replaceChildren();
+    $("config-warnings").replaceChildren();
+    if (!source.trim()) throw new Error("Paste or import a configuration before detecting settings.");
+    const result = core.inspectConfig(source);
+    const fragment = document.createDocumentFragment();
+    result.settings.forEach((setting, index) => {
+      const field = element("div", "field");
+      const id = "recognized-setting-" + index;
+      const label = element("label", "", setting.label);
+      label.htmlFor = id;
+      const input = element("input");
+      input.id = id;
+      input.type = "text";
+      input.autocomplete = "off";
+      input.spellcheck = false;
+      input.value = textValue(setting.value);
+      field.append(label, input);
+      if (setting.kind) {
+        const hint = element("small", "", "Supported setting type: " + setting.kind);
+        hint.id = id + "-hint";
+        input.setAttribute("aria-describedby", hint.id);
+        field.append(hint);
+      }
+      state.settingInputs.push({ id: setting.id, input });
+      fragment.append(field);
+    });
+    $("config-settings-fields").append(fragment);
+    if (!result.settings.length) {
+      $("config-settings-fields").append(element("p", "helper",
+        "No safely editable settings were recognized. Use the full raw editor and native validation."));
+    }
+    state.inspection = { source, result };
+    state.inspectionStale = false;
+    $("config-engine").textContent = result.engine;
+    $("config-syntax").textContent = result.syntax;
+    $("config-settings").disabled = false;
+    $("config-apply").disabled = result.settings.length === 0;
+    $("config-inspection-status").textContent = number(result.settings.length) +
+      " supported settings recognized. Guided changes preserve untouched source text.";
+    setNotes("config-warnings", result.warnings);
+    if (announce) notify("Configuration inspected. Review parser warnings and validate the candidate natively.");
+  }
+
+  on("config-raw", "input", () => invalidateInspection("Raw text changed. Detect settings again before applying any guided changes."));
+  on("config-inspect", "click", () => inspectCandidate());
+  on("config-settings-form", "submit", (event) => {
+    event.preventDefault();
+    if (!state.inspection || state.inspectionStale || $("config-raw").value !== state.inspection.source) {
+      invalidateInspection("The supported-setting form is stale. Detect settings again.");
+      throw new Error("Raw text changed or has not been inspected. Detect settings before applying changes.");
+    }
+    const changes = Object.create(null);
+    state.settingInputs.forEach(({ id, input }) => { changes[id] = input.value; });
+    const edited = core.editConfig(state.inspection.source, changes);
+    $("config-raw").value = edited;
+    inspectCandidate(false);
+    notify("Supported changes applied and the candidate re-inspected. Review the full file before downloading.");
+  });
+  on("config-file", "change", async () => {
+    const file = $("config-file").files[0];
+    if (!file) return;
+    $("config-file").disabled = true;
+    const before = $("config-raw").value;
+    try {
+      if (file.size > MAX_CONFIG_BYTES) throw new Error("Configuration import is limited to 5 MiB. Choose a smaller text file.");
+      const data = new Uint8Array(await file.arrayBuffer());
+      if (data[0] === 0x1f && data[1] === 0x8b) throw new Error("Compressed configurations are not supported. Decompress the file first.");
+      const text = new TextDecoder("utf-8", { fatal: true }).decode(data);
+      if (text.includes("\0")) throw new Error("This looks like a binary configuration. Import a UTF-8 text file.");
+      if ($("config-raw").value !== before) throw new Error("The candidate changed during import. Your edits were kept; choose the file again to replace them.");
+      $("config-raw").value = text;
+      $("config-filename").textContent = file.name;
+      invalidateInspection("File imported. Detect settings to inspect this new candidate.");
+      notify("Imported " + file.name + " locally. Detect settings when you are ready.");
+    } catch (error) {
+      if (error instanceof TypeError) throw new Error("Could not decode the configuration as UTF-8 text. Convert its encoding and import it again. " + messageOf(error));
+      throw error;
+    } finally {
+      $("config-file").value = "";
+      $("config-file").disabled = false;
+    }
+  });
+  on("config-download", "click", () => downloadEditor("config-raw", "candidate.conf"));
+  on("deployment-to-editor", "click", () => {
+    if (!$("deployment-config").value.trim()) throw new Error("Generate or enter deployment configuration first.");
+    $("config-raw").value = $("deployment-config").value;
+    $("config-filename").textContent = "Deployment candidate / " + (state.deploymentEngine || "manual");
+    invalidateInspection("Deployment candidate copied. Detect settings to inspect it.");
+    location.hash = "configuration";
+    showView("configuration", true);
+    notify("Deployment candidate copied to the raw editor. Detect settings to begin guided editing.");
+  });
+
+  function invalidatePreview(message = "Preview is out of date. Preview again against the current phrases and loaded events.") {
+    state.previewVersion += 1;
+    state.previewBusy = false;
+    $("detection-preview").disabled = Boolean(state.load);
+    $("detection-preview-results").replaceChildren();
+    $("detection-preview-summary").textContent = message;
+  }
+
+  function refreshMetrics() {
+    $("event-count").textContent = number(state.events.length);
+    $("file-count").textContent = number(state.sources.length);
+    $("byte-count").textContent = bytesLabel(state.bytes);
+    $("detection-event-count").textContent = number(state.events.length) + " loaded events";
+  }
+
+  function refreshSources() {
+    const selected = $("log-file-filter").value;
+    const all = element("option", "", "All sources");
+    all.value = "";
+    $("log-file-filter").replaceChildren(all);
+    state.sources.forEach((source) => {
+      const option = element("option", "", source.label + " (" + number(source.events) + " events" +
+        (source.complete ? "" : ", partial") + ")");
+      option.value = source.label;
+      $("log-file-filter").append(option);
+    });
+    $("log-file-filter").value = state.sources.some((source) => source.label === selected) ? selected : "";
+  }
+
+  function invalidateResults(message) {
+    state.result = null;
+    state.page = 0;
+    renderResults();
+    $("result-summary").textContent = message;
+  }
+
+  function setLoading(loading) {
+    ["log-files", "load-demo", "log-file-filter", "log-query", "query-run"].forEach((id) => { $(id).disabled = loading; });
+    document.querySelectorAll(".query-chip").forEach((button) => { button.disabled = loading; });
+    $("logs-clear").disabled = loading || state.sources.length === 0;
+    $("detection-preview").disabled = loading || state.previewBusy;
+    $("log-drop-zone").setAttribute("aria-disabled", String(loading));
+    $("load-progress-panel").hidden = !loading;
+    $("load-cancel").disabled = false;
+    $("load-cancel").textContent = "Cancel import";
+  }
+
+  class ImportStop extends Error {
+    constructor(message, cancelled = false) {
+      super(message);
+      this.name = "ImportStop";
+      this.cancelled = cancelled;
+    }
+  }
+
+  function ensureNotCancelled(load) {
+    if (load.cancelled) throw new ImportStop("Import cancelled. Completed events were kept; the unfinished line was discarded.", true);
+  }
+
+  function importProgress(load, source) {
+    refreshMetrics();
+    const loaded = state.bytes - load.startBytes;
+    $("load-progress").value = load.totalBytes ? Math.min(100, loaded / load.totalBytes * 100) : 0;
+    $("load-progress-text").textContent = "Reading " + source.label + " / " +
+      bytesLabel(loaded) + " of " + bytesLabel(load.totalBytes) + " / " +
+      number(state.events.length - load.startEvents) + " events added";
+  }
+
+  async function readLogFile(file, load) {
+    ensureNotCancelled(load);
+    if (state.bytes >= MAX_BYTES) throw new ImportStop("The combined 50 MiB source-data limit was reached. Clear the workspace or use smaller files before importing again.");
+    if (state.events.length >= MAX_EVENTS) throw new ImportStop("The 100,000 event limit was reached. Clear the workspace or split your input into smaller batches.");
+    if (typeof file.stream !== "function") throw new Error("Incremental file reading is unavailable. Open this workbench in a current browser with File.stream support.");
+    const header = new Uint8Array(await file.slice(0, 2).arrayBuffer());
+    ensureNotCancelled(load);
+    if (header[0] === 0x1f && header[1] === 0x8b) throw new Error(file.name + " is gzip-compressed. Decompress it locally, then import the resulting text file.");
+    const used = new Set(state.sources.map((source) => source.label));
+    let label = file.name;
+    let suffix = 2;
+    while (used.has(label)) label = file.name + " (" + suffix++ + ")";
+    const source = { label, bytes: 0, events: 0, complete: false };
+    state.sources.push(source);
+    importProgress(load, source);
+    const decoder = new TextDecoder("utf-8", { fatal: true });
+    const reader = file.stream().getReader();
+    let ended = false;
+    let lineNumber = 0;
+    let fragments = [];
+    let fragmentBytes = 0;
+    let linesInBatch = 0;
+    let lastYield = performance.now();
+
+    function addLine(line) {
+      lineNumber += 1;
+      if (line.length > MAX_LINE_BYTES / 3 && encoder.encode(line).byteLength > MAX_LINE_BYTES) {
+        throw new ImportStop(label + ", line " + number(lineNumber) + " exceeds the 1 MiB line limit. Split or filter oversized events before importing.");
+      }
+      if (line.endsWith("\r")) line = line.slice(0, -1);
+      if (!line.trim()) return;
+      if (state.events.length >= MAX_EVENTS) throw new ImportStop("The 100,000 event limit was reached while reading " + label +
+        ". The remaining events were not loaded. Clear the workspace or split the file into smaller batches.");
+      let parsed;
+      try {
+        parsed = core.parseLog(line, label, lineNumber);
+      } catch (error) {
+        throw new Error("Could not parse " + label + ", line " + number(lineNumber) + ": " + messageOf(error));
+      }
+      state.events.push(parsed);
+      source.events += 1;
+    }
+
+    function appendFragment(part) {
+      fragmentBytes += encoder.encode(part).byteLength;
+      if (fragmentBytes > MAX_LINE_BYTES) throw new ImportStop(label + ", line " + number(lineNumber + 1) +
+        " exceeds the 1 MiB line limit. Completed events were kept; split or filter oversized events before importing.");
+      fragments.push(part);
+    }
+
+    // Keep incomplete lines across decoder chunks, including split UTF-8 characters and CRLF.
+    async function consume(text) {
+      if (text.includes("\0")) throw new Error(label + " contains binary data. Import UTF-8 plain-text logs, not compressed or binary files.");
+      let start = 0;
+      let end = text.indexOf("\n");
+      while (end !== -1) {
+        const part = text.slice(start, end);
+        if (fragments.length) {
+          appendFragment(part);
+          addLine(fragments.join(""));
+          fragments = [];
+          fragmentBytes = 0;
+        } else {
+          addLine(part);
+        }
+        start = end + 1;
+        linesInBatch += 1;
+        if (linesInBatch >= 250 || performance.now() - lastYield > 12) {
+          importProgress(load, source);
+          await nextTask();
+          ensureNotCancelled(load);
+          linesInBatch = 0;
+          lastYield = performance.now();
+        }
+        end = text.indexOf("\n", start);
+      }
+      if (start < text.length) appendFragment(text.slice(start));
+    }
+
+    try {
+      while (true) {
+        ensureNotCancelled(load);
+        const chunk = await reader.read();
+        ensureNotCancelled(load);
+        if (chunk.done) {
+          ended = true;
+          await consume(decoder.decode());
+          ensureNotCancelled(load);
+          if (fragments.length) addLine(fragments.join(""));
+          source.complete = true;
+          return;
+        }
+        const remaining = MAX_BYTES - state.bytes;
+        const accepted = chunk.value.subarray(0, remaining);
+        state.bytes += accepted.byteLength;
+        source.bytes += accepted.byteLength;
+        await consume(decoder.decode(accepted, { stream: true }));
+        if (accepted.byteLength < chunk.value.byteLength) {
+          throw new ImportStop("The combined 50 MiB source-data limit was reached in " + label +
+            ". Completed lines were kept; the unfinished line and remaining files were not loaded. Clear the workspace or import smaller batches.");
+        }
+        importProgress(load, source);
+        await nextTask();
+      }
+    } catch (error) {
+      if (error instanceof TypeError) throw new Error("Could not read " + label +
+        " as UTF-8 text. Convert its encoding before importing again. " + messageOf(error));
+      throw error;
+    } finally {
+      try {
+        if (!ended) await reader.cancel();
+      } finally {
+        reader.releaseLock();
+      }
+    }
+  }
+
+  async function loadFiles(files) {
+    if (!files.length) return;
+    if (state.load) throw new Error("An import is already running. Wait for it or cancel it before adding more files.");
+    const load = {
+      cancelled: false,
+      startBytes: state.bytes,
+      startEvents: state.events.length,
+      totalBytes: files.reduce((total, file) => total + file.size, 0)
+    };
+    state.load = load;
+    invalidatePreview("Logs are being imported. Preview after loading finishes.");
+    invalidateResults("Import in progress. Completed events will be searchable when loading stops.");
+    $("query-error").hidden = true;
+    $("load-notice").hidden = true;
+    $("load-progress").value = 0;
+    $("load-progress-text").textContent = "Preparing local file import...";
+    setLoading(true);
+    try {
+      await nextTask();
+      for (const file of files) await readLogFile(file, load);
+      const added = state.events.length - load.startEvents;
+      $("load-notice").className = "notice";
+      $("load-notice").textContent = "Import complete. Added " + number(added) + " events from " +
+        number(files.length) + " files. Files remain in memory only; export any results you want to keep.";
+      notify("Loaded " + number(added) + " local events.");
+    } catch (error) {
+      const partial = state.events.length - load.startEvents;
+      $("load-notice").className = error instanceof ImportStop ? "notice notice-warning" : "notice notice-error";
+      $("load-notice").textContent = messageOf(error) + " Added " + number(partial) +
+        " events in this import; " + number(state.events.length) + " total events remain available. No later files in the selection were read. Partial sources are marked in the source filter.";
+      notify(messageOf(error), !(error instanceof ImportStop && error.cancelled));
+    } finally {
+      state.load = null;
+      $("load-notice").hidden = false;
+      setLoading(false);
+      refreshMetrics();
+      refreshSources();
+      invalidatePreview("Loaded events changed. Preview again to inspect the current data.");
+      runQuery();
+    }
+  }
+
+  on("log-files", "change", () => {
+    const files = Array.from($("log-files").files);
+    $("log-files").value = "";
+    return loadFiles(files);
+  });
+  on("load-cancel", "click", () => {
+    if (!state.load) return;
+    state.load.cancelled = true;
+    $("load-cancel").disabled = true;
+    $("load-cancel").textContent = "Cancelling...";
+    $("load-progress-text").textContent = "Cancelling import after the current batch...";
+  });
+  let dragDepth = 0;
+  const dropZone = $("log-drop-zone");
+  window.addEventListener("dragover", (event) => {
+    if (Array.from(event.dataTransfer.types).includes("Files")) event.preventDefault();
+  });
+  window.addEventListener("drop", (event) => {
+    if (Array.from(event.dataTransfer.types).includes("Files")) {
+      event.preventDefault();
+      if (!dropZone.contains(event.target)) notify("Drop files inside the log import area, or use Choose files.", true);
+    }
+  });
+  on("log-drop-zone", "dragenter", (event) => {
+    event.preventDefault();
+    dragDepth += 1;
+    if (!state.load) dropZone.classList.add("drag-active");
+  });
+  on("log-drop-zone", "dragover", (event) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = state.load ? "none" : "copy";
+  });
+  on("log-drop-zone", "dragleave", (event) => {
+    event.preventDefault();
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (!dragDepth) dropZone.classList.remove("drag-active");
+  });
+  on("log-drop-zone", "drop", (event) => {
+    event.preventDefault();
+    dragDepth = 0;
+    dropZone.classList.remove("drag-active");
+    const files = Array.from(event.dataTransfer.files);
+    if (!files.length) throw new Error("No readable files were dropped. Choose individual plain-text files, not folders.");
+    return loadFiles(files);
+  });
+
+  const demos = [
+    {
+      name: "sample-network.log",
+      lines: [
+        '<166>Sep 28 09:00:01 edge-router-01 %SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 192.0.2.20 port 6514 started',
+        '<164>Sep 28 09:00:04 firewall-01 %ASA-4-106023: Deny tcp src outside:198.51.100.24/54218 dst inside:192.0.2.10/22 by access-group "outside_access_in"',
+        '<166>Sep 28 09:00:05 firewall-01 %ASA-6-302013: Built inbound TCP connection 8091 for outside:203.0.113.8/443 to inside:192.0.2.30/53110',
+        '<165>Sep 28 09:00:07 switch-02 %LINK-5-CHANGED: Interface GigabitEthernet1/0/24, changed state to administratively down',
+        '<134>1 2026-09-28T09:00:09Z juniper-srx RT_FLOW 120 - - RT_FLOW_SESSION_DENY: firewall deny 198.51.100.24/54218 to 192.0.2.10/22',
+        '<131>1 2026-09-28T09:01:00Z edge-router-01 rpd 312 ROUTE_LOST [routing@32473 peer="192.0.2.1"] BGP peer down: hold timer expired',
+        '<165>Sep 28 09:01:05 switch-02 %LINK-5-CHANGED: Interface GigabitEthernet1/0/24, changed state to up',
+        '<134>1 2026-09-28T09:01:11Z juniper-srx RT_FLOW 120 - - Session permitted 192.0.2.30/52000 to 203.0.113.8/443',
+        '<164>Sep 28 09:01:18 firewall-01 %ASA-4-106023: Deny udp src outside:198.51.100.24/51000 dst inside:192.0.2.53/53',
+        '<166>1 2026-09-28T09:01:23Z edge-router-01 rpd 312 ROUTE_UP - BGP session restored with peer 192.0.2.1'
+      ]
+    },
+    {
+      name: "sample-auth.log",
+      lines: [
+        '<86>Sep 28 09:00:03 linux-app-01 sshd[2104]: Accepted publickey for operator from 192.0.2.15 port 49001 ssh2',
+        '<84>Sep 28 09:00:12 linux-app-01 sshd[2117]: Failed password for invalid user admin from 198.51.100.24 port 54218 ssh2',
+        '<84>Sep 28 09:00:16 linux-app-01 sshd[2118]: Failed password for root from 198.51.100.24 port 54220 ssh2',
+        '<83>Sep 28 09:00:20 linux-app-02 login[713]: failed login for service-user on pts/1',
+        '<85>Sep 28 09:00:24 linux-app-01 sudo[2140]: operator : TTY=pts/0 ; PWD=/home/operator ; USER=root ; COMMAND=/usr/bin/systemctl status syslog-ng',
+        '<82>1 2026-09-28T09:00:31Z linux-app-02 auditd 702 AUTH_FAILURE [audit@32473 uid="1002"] authentication failure; privilege escalation attempt denied',
+        '<86>1 2026-09-28T09:00:42Z linux-app-01 systemd 1 - - Started syslog-ng.service - System Logger Daemon',
+        '<84>Sep 28 09:01:10 linux-app-02 sshd[2301]: Failed password for invalid user test from 203.0.113.99 port 41022 ssh2',
+        '<85>Sep 28 09:01:20 linux-app-02 sudo[2320]: pam_unix(sudo:session): session opened for user root by operator(uid=1000)',
+        '<86>1 2026-09-28T09:01:30Z linux-app-01 sshd 2390 - - Accepted publickey for deploy from 192.0.2.15 port 49030 ssh2'
+      ]
+    },
+    {
+      name: "sample-cloud.jsonl",
+      lines: [
+        '{"timestamp":"2026-09-28T09:00:08Z","host":"azure-gateway-01","app":"azure-firewall","severity":"warning","severity_code":4,"facility":"local0","facility_code":16,"message":"firewall deny: inbound SSH outside approved network","src_ip":"198.51.100.24","action":"deny","environment":"azure"}',
+        '{"timestamp":"2026-09-28T09:00:18Z","host":"aws-edge-01","app":"vpc-flow","severity":"notice","severity_code":5,"facility":"local0","facility_code":16,"message":"Rejected inbound connection to management subnet","src_ip":"203.0.113.99","action":"reject","environment":"aws"}',
+        '{"timestamp":"2026-09-28T09:00:35Z","host":"azure-gateway-01","app":"entra-audit","severity":"err","severity_code":3,"facility":"auth","facility_code":4,"message":"failed login: conditional access policy blocked sign-in","user":"sample-operator","environment":"azure"}',
+        '{"timestamp":"2026-09-28T09:00:50Z","host":"aws-edge-01","app":"cloudtrail","severity":"warning","severity_code":4,"facility":"authpriv","facility_code":10,"message":"privilege escalation: unauthorized role assumption denied","action":"deny","environment":"aws"}',
+        '{"timestamp":"2026-09-28T09:01:15Z","host":"azure-gateway-01","app":"azure-firewall","severity":"info","severity_code":6,"facility":"local0","facility_code":16,"message":"Allowed outbound HTTPS to approved service","action":"allow","environment":"azure"}',
+        '{"timestamp":"2026-09-28T09:01:40Z","host":"aws-edge-01","app":"vpc-flow","severity":"info","severity_code":6,"facility":"local0","facility_code":16,"message":"Flow accepted from application subnet","action":"allow","environment":"aws"}'
+      ]
+    }
+  ];
+  on("load-demo", "click", () => loadFiles(demos.map((demo) =>
+    new File([demo.lines.join("\n") + "\n"], demo.name, { type: "text/plain" }))));
+  on("logs-clear", "click", () => {
+    if (state.load) throw new Error("Cancel the active import before clearing the workspace.");
+    state.events = [];
+    state.sources = [];
+    state.bytes = 0;
+    $("load-notice").hidden = true;
+    $("query-error").hidden = true;
+    $("logs-clear").disabled = true;
+    refreshMetrics();
+    refreshSources();
+    invalidateResults("Workspace cleared. Import new logs or load the sample.");
+    invalidatePreview("No events loaded. Add logs in the explorer to preview detections.");
+    $("row-dialog").close();
+    $("row-fields").replaceChildren();
+    $("row-raw").value = "";
+    $("row-dialog-title").textContent = "Event details";
+    notify("Loaded logs and results cleared from this workspace. Explicitly downloaded files are not affected.");
+  });
+
+  function renderResults() {
+    const result = state.result;
+    const rows = result ? result.rows : [];
+    const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+    state.page = Math.max(0, Math.min(state.page, pages - 1));
+    $("result-count").textContent = number(rows.length);
+    $("results-csv").disabled = !result || !rows.length;
+    $("results-json").disabled = !result || !rows.length;
+    $("page-prev").disabled = !rows.length || state.page === 0;
+    $("page-next").disabled = !rows.length || state.page >= pages - 1;
+    $("results-empty").hidden = rows.length > 0;
+    $("results-table-wrap").hidden = rows.length === 0;
+    $("results-head").replaceChildren();
+    $("results-body").replaceChildren();
+    if (!rows.length) {
+      $("page-summary").textContent = "100 rows per page";
+      $("results-empty").querySelector("h3").textContent = state.events.length
+        ? "No results to show." : "Your next insight starts here.";
+      $("results-empty").querySelector("p").textContent = state.events.length
+        ? "Run a query, broaden your filter, or choose another source."
+        : "Add local logs or explore the curated sample. Events never leave your browser.";
+      return;
+    }
+    const header = element("tr");
+    const detailsHeader = element("th", "", "Inspect");
+    detailsHeader.scope = "col";
+    header.append(detailsHeader);
+    result.columns.forEach((column) => {
+      const th = element("th", "", column);
+      th.scope = "col";
+      header.append(th);
+    });
+    $("results-head").append(header);
+    const start = state.page * PAGE_SIZE;
+    const end = Math.min(start + PAGE_SIZE, rows.length);
+    const fragment = document.createDocumentFragment();
+    for (let index = start; index < end; index += 1) {
+      const row = rows[index];
+      const tr = element("tr");
+      const detailCell = element("td");
+      const button = element("button", "button button-ghost row-view", "View");
+      button.type = "button";
+      button.setAttribute("aria-label", "Inspect result row " + number(index + 1));
+      button.addEventListener("click", () => showRow(row));
+      detailCell.append(button);
+      tr.append(detailCell);
+      result.columns.forEach((column) => {
+        const td = element("td");
+        const text = textValue(row[column]);
+        const span = element("span", "cell-text", text.length > 500 ? text.slice(0, 500) + "..." : text);
+        if (column === "severity") {
+          const severity = row.severity_code === null || row.severity_code === undefined || row.severity_code === ""
+            ? NaN : Number(row.severity_code);
+          span.className = "severity " + (severity <= 3 ? "severity-high" : severity === 4 ? "severity-warning" : severity <= 7 ? "severity-info" : "");
+        }
+        td.append(span);
+        tr.append(td);
+      });
+      fragment.append(tr);
+    }
+    $("results-body").append(fragment);
+    $("results-table-wrap").scrollTop = 0;
+    $("page-summary").textContent = number(start + 1) + "-" + number(end) + " of " +
+      number(rows.length) + " rows / Page " + number(state.page + 1) + " of " + number(pages);
+  }
+
+  function runQuery() {
+    if (state.load) throw new Error("Wait for the import to finish or cancel it before querying.");
+    $("query-error").hidden = true;
+    $("log-query").removeAttribute("aria-invalid");
+    try {
+      const source = $("log-file-filter").value;
+      const events = source ? state.events.filter((event) => event.file === source) : state.events;
+      const result = core.searchLogs(events, $("log-query").value);
+      state.result = result;
+      state.page = 0;
+      renderResults();
+      $("result-summary").textContent = number(result.scanned) + " total events before search / " +
+        number(result.matched) + " matched before pipes / " + number(result.total) + " result rows" +
+        (source ? " / Selected source" : " / All sources");
+    } catch (error) {
+      invalidateResults("Query failed. Correct the query before exporting or inspecting results.");
+      $("query-error").textContent = messageOf(error);
+      $("query-error").hidden = false;
+      $("log-query").setAttribute("aria-invalid", "true");
+    }
+  }
+
+  on("query-form", "submit", (event) => { event.preventDefault(); runQuery(); });
+  on("log-file-filter", "change", runQuery);
+  on("log-query", "input", () => {
+    $("query-error").hidden = true;
+    $("log-query").removeAttribute("aria-invalid");
+    invalidateResults("Query changed. Run it to refresh the results and exports.");
+  });
+  document.querySelectorAll("[data-query]").forEach((button) => {
+    button.addEventListener("click", () => {
+      $("log-query").value = button.dataset.query;
+      runQuery();
+    });
+  });
+  on("page-prev", "click", () => { state.page -= 1; renderResults(); });
+  on("page-next", "click", () => { state.page += 1; renderResults(); });
+
+  function showRow(row) {
+    $("row-dialog-title").textContent = row.file
+      ? textValue(row.file) + (row.line ? " / Line " + row.line : "")
+      : "Query result details";
+    const fields = document.createDocumentFragment();
+    Object.entries(row).forEach(([key, value]) => {
+      if (key === "raw") return;
+      fields.append(element("dt", "", key), element("dd", "", textValue(value)));
+    });
+    $("row-fields").replaceChildren(fields);
+    $("row-raw").value = Object.prototype.hasOwnProperty.call(row, "raw")
+      ? textValue(row.raw)
+      : "This transformed result has no raw event. Run a query without aggregation or field projection to inspect source events.";
+    $("row-dialog").showModal();
+  }
+  on("row-dialog-close", "click", () => $("row-dialog").close());
+  on("row-dialog", "close", () => {
+    $("row-fields").replaceChildren();
+    $("row-raw").value = "";
+  });
+
+  const csvCell = core.csvCell;
+
+  async function exportResults(format) {
+    const result = state.result;
+    if (!result || !result.rows.length) throw new Error("Run a query with results before exporting.");
+    $("results-csv").disabled = true;
+    $("results-json").disabled = true;
+    try {
+      await nextTask();
+      if (format === "json") {
+        download(JSON.stringify(result.rows, null, 2), "logops-results.json", "application/json;charset=utf-8");
+      } else {
+        const lines = [result.columns.map(csvCell).join(",")];
+        for (let index = 0; index < result.rows.length; index += 1) {
+          const row = result.rows[index];
+          lines.push(result.columns.map((column) => csvCell(row[column])).join(","));
+          if (index % 2000 === 1999) await nextTask();
+        }
+        download("\uFEFF" + lines.join("\r\n") + "\r\n", "logops-results.csv", "text/csv;charset=utf-8");
+      }
+    } finally {
+      $("results-csv").disabled = !state.result || !state.result.rows.length;
+      $("results-json").disabled = !state.result || !state.result.rows.length;
+    }
+  }
+  on("results-csv", "click", () => exportResults("csv"));
+  on("results-json", "click", () => exportResults("json"));
+
+  const presets = {
+    login: ["Failed password", "failed login", "authentication failure"],
+    firewall: ["firewall deny", "Deny tcp", "Deny udp", "RT_FLOW_SESSION_DENY"],
+    privilege: ["privilege escalation", "session opened for user root", "USER=root"]
+  };
+
+  function detectionOptions() {
+    const patterns = [...new Set($("detection-patterns").value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean))];
+    if (!patterns.length) throw new Error("Enter at least one nonempty literal phrase.");
+    return {
+      patterns,
+      ignoreCase: $("detection-ignore-case").checked,
+      throttle: Number($("detection-throttle").value)
+    };
+  }
+
+  on("detection-form", "input", () => {
+    invalidatePreview();
+    if ($("detection-output").value) $("detection-state").textContent = "Rules changed - regenerate";
+  });
+  document.querySelectorAll("[data-preset]").forEach((button) => {
+    button.addEventListener("click", () => {
+      $("detection-patterns").value = presets[button.dataset.preset].join("\n");
+      $("detection-state").textContent = "Preset selected - generate";
+      invalidatePreview();
+      notify("Preset phrases selected. Generate the configuration or preview matches.");
+    });
+  });
+  on("detection-form", "submit", (event) => {
+    event.preventDefault();
+    if (!$("detection-form").reportValidity()) return;
+    const output = core.generateSwatch(detectionOptions());
+    $("detection-output").value = output;
+    $("detection-download").disabled = !output.trim();
+    $("detection-state").textContent = "Generated / literal phrases";
+    notify("Swatch configuration generated. Review it before running swatchdog on your host.");
+  });
+  bindOutput("detection-output", ["detection-download"], "detection-state");
+  on("detection-download", "click", () => downloadEditor("detection-output", "swatchrc"));
+
+  on("detection-preview", "click", async () => {
+    if (state.load) throw new Error("Wait for the import to finish or cancel it before previewing detections.");
+    if (!state.events.length) throw new Error("Load log files or the sample in Log explorer before previewing detections.");
+    if (!$("detection-form").reportValidity()) return;
+    const options = detectionOptions();
+    const version = ++state.previewVersion;
+    state.previewBusy = true;
+    $("detection-preview").disabled = true;
+    $("detection-preview-results").replaceChildren();
+    const counts = options.patterns.map((pattern) => ({
+      phrase: pattern, needle: options.ignoreCase ? pattern.toLowerCase() : pattern, events: 0, hits: 0
+    }));
+    let matchedEvents = 0;
+    const samples = [];
+    try {
+      for (let index = 0; index < state.events.length; index += 1) {
+        const raw = textValue(state.events[index].raw);
+        const haystack = options.ignoreCase ? raw.toLowerCase() : raw;
+        let matched = false;
+        counts.forEach((count) => {
+          let at = haystack.indexOf(count.needle);
+          if (at !== -1) {
+            count.events += 1;
+            matched = true;
+          }
+          while (at !== -1) {
+            count.hits += 1;
+            at = haystack.indexOf(count.needle, at + count.needle.length);
+          }
+        });
+        if (matched) {
+          matchedEvents += 1;
+          if (samples.length < 5) samples.push(raw.length > 600 ? raw.slice(0, 600) + "..." : raw);
+        }
+        if (index % 250 === 0) {
+          $("detection-preview-summary").textContent = "Scanning " + number(index + 1) + " of " + number(state.events.length) + " loaded events...";
+          await nextTask();
+          // A new import or phrase edit invalidates this in-flight preview, with a visible status.
+          if (version !== state.previewVersion) return;
+        }
+      }
+      $("detection-preview-summary").textContent = number(matchedEvents) + " of " + number(state.events.length) +
+        " loaded events match at least one phrase. Hits are non-overlapping occurrences per phrase; throttling is not simulated.";
+      counts.forEach((count) => {
+        const row = element("div", "preview-result");
+        row.append(element("span", "", count.phrase), element("strong", "", number(count.events) + " events / " + number(count.hits) + " hits"));
+        $("detection-preview-results").append(row);
+      });
+      if (samples.length) {
+        $("detection-preview-results").append(element("p", "helper", "First " + samples.length + " matching events (long lines shortened):"));
+        samples.forEach((sample) => $("detection-preview-results").append(element("pre", "preview-sample", sample)));
+      }
+    } finally {
+      if (version === state.previewVersion) {
+        state.previewBusy = false;
+        $("detection-preview").disabled = Boolean(state.load);
+      }
+    }
+  });
+
+  on("maintenance-form", "input", () => {
+    if ($("maintenance-logrotate").value || $("maintenance-backup").value) $("maintenance-state").textContent = "Policy changed - regenerate";
+  });
+  on("maintenance-form", "submit", (event) => {
+    event.preventDefault();
+    if (!$("maintenance-form").reportValidity()) return;
+    const options = {
+      logPath: $("maintenance-log-path").value,
+      archiveDir: $("maintenance-archive-dir").value,
+      rotate: Number($("maintenance-rotate").value),
+      frequency: $("maintenance-frequency").value,
+      maxSize: $("maintenance-max-size").value,
+      compression: $("maintenance-compression").value,
+      engine: $("maintenance-engine").value
+    };
+    const output = core.generateMaintenance(options);
+    $("maintenance-logrotate").value = output.logrotate;
+    $("maintenance-backup").value = output.backup;
+    $("maintenance-logrotate-download").disabled = !output.logrotate.trim();
+    $("maintenance-backup-download").disabled = !output.backup.trim();
+    $("maintenance-state").textContent = "Generated / " + options.frequency;
+    setNotes("maintenance-notes", output.notes);
+    notify("Rotation policy and rotated-log backup generated. Review both before installing or scheduling them.");
+  });
+  bindOutput("maintenance-logrotate", ["maintenance-logrotate-download"], "maintenance-state");
+  bindOutput("maintenance-backup", ["maintenance-backup-download"], "maintenance-state");
+  on("maintenance-logrotate-download", "click", () => downloadEditor("maintenance-logrotate", "logops.logrotate"));
+  on("maintenance-backup-download", "click", () => downloadEditor("maintenance-backup", "logops-backup.sh"));
+
+  resetProfile();
+  refreshMetrics();
+})();
+</script>
+</body>
+</html>
