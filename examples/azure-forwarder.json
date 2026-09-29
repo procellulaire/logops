@@ -1,0 +1,17 @@
+{
+  "engine": "rsyslog",
+  "role": "forwarder",
+  "environment": "azure",
+  "transport": "tls",
+  "wireFormat": "rfc5424",
+  "bind": "127.0.0.1",
+  "port": 6514,
+  "target": "logs.example.net",
+  "targetPort": 6514,
+  "peerName": "logs.example.net",
+  "allowedPeer": "device.example.net",
+  "queueDir": "/var/lib/logops",
+  "caFile": "/etc/ssl/certs/logops-ca.pem",
+  "certFile": "/etc/ssl/certs/logops.pem",
+  "keyFile": "/etc/ssl/private/logops.key"
+}

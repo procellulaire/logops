@@ -1,0 +1,13 @@
+{
+  "name": "logops-workbench",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline syslog operations workbench and Bash console",
+  "license": "Apache-2.0",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "build": "node tools/build.js",
+    "test": "node --test",
+    "check": "node tools/build.js --check"
+  }
+}

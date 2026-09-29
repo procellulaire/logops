@@ -1,0 +1,8 @@
+<134>1 2026-09-28T14:20:01Z edge-fw firewall 781 FLOW - deny src=192.0.2.14 dst=198.51.100.20 port=443 action=deny
+<134>1 2026-09-28T14:20:02Z edge-fw firewall 781 FLOW - allow src=192.0.2.15 dst=198.51.100.20 port=443 action=allow
+<84>Sep 28 14:21:00 branch-01 sshd[302]: Failed password for admin from 192.0.2.45 port 52822 ssh2
+<86>Sep 28 14:21:20 branch-01 sshd[302]: Accepted publickey for operator from 192.0.2.18
+<132>Sep 28 14:22:00 core-switch link[23]: interface down interface=Ethernet1/2
+<35>1 2026-09-28T14:22:30Z edge-fw firewall 781 HEALTH [health@32473 component="disk"] disk utilization high percent=92
+{"timestamp":"2026-09-28T14:23:00Z","host":"cloud-agent","app":"sudo","severity":"warning","message":"privilege escalation user=operator command=sudo"}
+<134>1 2026-09-28T14:24:01Z edge-fw firewall 781 FLOW - deny src=192.0.2.14 dst=198.51.100.20 port=22 action=deny

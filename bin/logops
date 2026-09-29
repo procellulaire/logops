@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if ! command -v node >/dev/null 2>&1; then
+    printf 'LogOps requires Node.js 18+ on PATH. On Windows, use WSL or Git Bash, or node bin/logops.js directly.\n' >&2
+    exit 127
+fi
+script_path=${BASH_SOURCE[0]//\\//}
+if [[ "$script_path" != */* ]]; then script_path="./$script_path"; fi
+script_dir=$(cd -- "${script_path%/*}" && pwd)
+exec node "$script_dir/logops.js" "$@"

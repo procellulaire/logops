@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="An offline syslog configuration, investigation, and maintenance workbench.">
+  <title>LogOps | Offline syslog workbench</title>
+  <style>/* LOGOPS_STYLES */</style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to workspace</a>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="icon-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="icon-sliders" viewBox="0 0 24 24"><path d="M4 7h8m4 0h4M4 17h3m4 0h9"/><circle cx="14" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="icon-archive" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="5" rx="1"/><path d="M5 8v13h14V8M9 12h6"/></symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
+    <symbol id="icon-upload" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></symbol>
+    <symbol id="icon-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></symbol>
+    <symbol id="icon-terminal" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m6 8 4 4-4 4m7 0h5"/></symbol>
+    <symbol id="icon-file" viewBox="0 0 24 24"><path d="M14 2H5v20h14V7l-5-5Zm0 0v6h5M8 12h8m-8 4h8"/></symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Workbench navigation">
+      <a class="brand" href="#deployment" aria-label="LogOps deployment workspace">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M7 7h6v12h12v6H7z"/><path d="M19 7h6v6h-6z"/></svg></span>
+        <span>LogOps<small>SYSLOG WORKBENCH</small></span>
+      </a>
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="primary-nav" aria-label="Primary">
+        <a href="#deployment" data-view="deployment" aria-controls="deployment" aria-current="page"><svg class="icon"><use href="#icon-grid"/></svg><span>Deployment</span><span class="nav-dot" aria-hidden="true"></span></a>
+        <a href="#configuration" data-view="configuration" aria-controls="configuration"><svg class="icon"><use href="#icon-sliders"/></svg><span>Configuration</span></a>
+        <a href="#explorer" data-view="explorer" aria-controls="explorer"><svg class="icon"><use href="#icon-search"/></svg><span>Log explorer</span></a>
+        <a href="#detections" data-view="detections" aria-controls="detections"><svg class="icon"><use href="#icon-shield"/></svg><span>Detections</span></a>
+        <a href="#maintenance" data-view="maintenance" aria-controls="maintenance"><svg class="icon"><use href="#icon-archive"/></svg><span>Retention &amp; archive</span></a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="local-card"><svg class="icon"><use href="#icon-lock"/></svg><strong>Your files. Your machine.</strong><p>Files stay in this browser session. Nothing is uploaded or saved automatically.</p><span class="local-indicator">LOCAL BY DESIGN</span></div>
+        <div class="sidebar-footer"><span class="status-dot"></span> Offline operations toolkit</div>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div class="breadcrumb">Workspace <span aria-hidden="true">/</span> <strong id="current-view-name">Deployment</strong></div>
+        <div class="topbar-badges"><span class="badge badge-local"><span class="status-dot"></span> Offline ready</span><span class="session-badge">In-memory session</span></div>
+      </header>
+      <main id="main-content" tabindex="-1">
+        <noscript><div class="notice notice-error">JavaScript is required for this offline workbench. Enable it and reopen the bundled HTML file.</div></noscript>
+        <div id="runtime-error" class="notice notice-error" role="alert" hidden></div>
+
+        <section id="deployment" class="view" aria-labelledby="deployment-title">
+          <div class="page-heading"><div><p class="eyebrow">PLAN. CONFIGURE. OPERATE.</p><h1 id="deployment-title">A clearer path to better logs.</h1><p>Prepare a syslog deployment, investigate events, and keep retention under control.</p></div><span class="heading-tag"><svg class="icon"><use href="#icon-terminal"/></svg> No host connection</span></div>
+          <div class="overview-grid">
+            <div class="overview-card"><span class="overview-icon"><svg class="icon"><use href="#icon-sliders"/></svg></span><div><strong>Two engines, one workspace</strong><p>syslog-ng and rsyslog configuration</p></div></div>
+            <div class="overview-card"><span class="overview-icon"><svg class="icon"><use href="#icon-search"/></svg></span><div><strong>From raw events to answers</strong><p>Local search, aggregations, and exports</p></div></div>
+            <div class="overview-card"><span class="overview-icon"><svg class="icon"><use href="#icon-lock"/></svg></span><div><strong>Offline, not a remote console</strong><p>Review and download. Deploy on your host.</p></div></div>
+          </div>
+          <div class="notice"><svg class="icon"><use href="#icon-lock"/></svg><div><strong>A local preparation workspace.</strong> This browser does not install services, connect to hosts, or execute generated commands. Review every artifact and validate it with your installed native tools.</div></div>
+          <div class="split-layout deployment-layout">
+            <form id="deployment-form" class="card">
+              <div class="card-heading"><div><span class="step-label">01 / DEFINE</span><h2>Deployment profile</h2></div><span class="badge">Linux</span></div>
+              <div class="card-body">
+                <div class="field-grid">
+                  <div class="field"><label for="profile-engine">Syslog engine</label><select id="profile-engine" name="engine"><option value="syslog-ng">syslog-ng</option><option value="rsyslog">rsyslog</option></select></div>
+                  <div class="field"><label for="profile-role">Deployment role</label><select id="profile-role" name="role"><option value="server">Server / collect to file</option><option value="forwarder">Forwarder / relay to remote</option><option value="agent">Agent / local to remote</option></select></div>
+                  <div class="field"><label for="profile-environment">Environment</label><select id="profile-environment" name="environment"><option value="on-prem">On premises</option><option value="azure">Microsoft Azure</option><option value="aws">Amazon Web Services</option><option value="other">Other / hybrid</option></select></div>
+                  <div class="field"><label for="profile-transport">Transport</label><select id="profile-transport" name="transport"><option value="tls">TLS / encrypted</option><option value="tcp">TCP / unencrypted</option><option value="udp">UDP / unencrypted</option></select></div>
+                  <div class="field field-wide"><label for="profile-wireFormat">Wire format</label><select id="profile-wireFormat" name="wireFormat" aria-describedby="profile-wire-format-note"><option value="rfc3164">RFC3164 / traditional syslog</option><option value="rfc5424">RFC5424 / structured syslog</option></select><small id="profile-wire-format-note">Match the wire format and framing to your sender and receiver.</small></div>
+                </div>
+                <div id="profile-flow" class="flow-preview" aria-live="polite"></div>
+                <fieldset id="profile-listener"><legend>Network listener</legend><div class="field-grid"><div class="field"><label for="profile-bind">Bind address</label><input id="profile-bind" name="bind" type="text" autocomplete="off" spellcheck="false" required></div><div class="field"><label for="profile-port">Listen port</label><input id="profile-port" name="port" type="number" min="1" max="65535" required></div></div></fieldset>
+                <fieldset id="profile-remote"><legend>Remote destination</legend><div class="field-grid"><div class="field"><label for="profile-target">Target host or address</label><input id="profile-target" name="target" type="text" autocomplete="off" spellcheck="false" required></div><div class="field"><label for="profile-targetPort">Target port</label><input id="profile-targetPort" name="targetPort" type="number" min="1" max="65535" required></div></div></fieldset>
+                <fieldset><legend>Storage paths</legend><div class="field-grid"><div class="field"><label for="profile-logPath">Destination log file</label><input id="profile-logPath" name="logPath" type="text" autocomplete="off" spellcheck="false" required><small>Used by the server role.</small></div><div class="field"><label for="profile-queueDir">Persistent queue directory</label><input id="profile-queueDir" name="queueDir" type="text" autocomplete="off" spellcheck="false" aria-describedby="profile-queueDir-help" required><small id="profile-queueDir-help">Persistent queue storage for both syslog-ng and rsyslog.</small></div></div></fieldset>
+                <fieldset id="profile-tls"><legend>TLS certificates</legend><div class="field-grid"><div class="field"><label for="profile-caFile">CA certificate file</label><input id="profile-caFile" name="caFile" type="text" autocomplete="off" spellcheck="false" required></div><div class="field"><label for="profile-certFile">Host certificate file</label><input id="profile-certFile" name="certFile" type="text" autocomplete="off" spellcheck="false" required></div><div class="field"><label for="profile-keyFile">Private key file</label><input id="profile-keyFile" name="keyFile" type="text" autocomplete="off" spellcheck="false" required></div><div class="field"><label for="profile-allowedPeer">Allowed sender certificate (rsyslog TLS listener)</label><input id="profile-allowedPeer" name="allowedPeer" type="text" autocomplete="off" spellcheck="false" aria-describedby="profile-allowedPeer-help"><small id="profile-allowedPeer-help">Certificate name allowed for incoming senders, separate from the outgoing receiver.</small></div><div class="field"><label id="profile-peerName-label" for="profile-peerName">Receiver certificate name (rsyslog TLS forwarding)</label><input id="profile-peerName" name="peerName" type="text" autocomplete="off" spellcheck="false" aria-describedby="profile-peerName-help"><small id="profile-peerName-help">Expected certificate name of the outgoing receiver, separate from incoming senders.</small></div></div></fieldset>
+                <p id="profile-transport-note" class="helper"></p>
+              </div>
+              <div class="card-footer"><button type="submit" class="button button-primary">Generate deployment <svg class="icon"><use href="#icon-arrow"/></svg></button><button id="profile-reset" type="button" class="button button-ghost">Reset profile</button></div>
+            </form>
+            <div class="stack">
+              <div class="card">
+                <div class="card-heading"><div><span class="step-label">02 / REVIEW</span><h2>Deployment artifacts</h2></div><span id="deployment-state" class="badge">Ready to generate</span></div>
+                <div class="card-body"><label for="deployment-config">Generated configuration <span class="label-hint">editable</span></label><textarea id="deployment-config" class="code-editor" rows="16" spellcheck="false" autocomplete="off" placeholder="Generate a profile to create a candidate configuration."></textarea><div class="button-row"><button id="deployment-download" class="button button-secondary" type="button" disabled><svg class="icon"><use href="#icon-download"/></svg> Download config</button><button id="deployment-to-editor" class="button button-ghost" type="button" disabled>Open in editor <svg class="icon"><use href="#icon-arrow"/></svg></button></div><p class="helper">Opening in the editor replaces its current candidate. Download any edits you want to keep first.</p></div>
+              </div>
+              <div class="card">
+                <div class="card-heading"><div><span class="step-label">03 / TAKE TO YOUR HOST</span><h2>Deployment instructions</h2></div></div>
+                <div class="card-body"><label class="sr-only" for="deployment-commands">Editable deployment instructions</label><textarea id="deployment-commands" class="code-editor code-editor-short" rows="8" spellcheck="false" autocomplete="off" placeholder="Native commands will appear here. Nothing runs in this browser."></textarea><button id="deployment-commands-download" class="button button-secondary" type="button" disabled>Download instructions</button><ul id="deployment-notes" class="notes-list"></ul></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="configuration" class="view" aria-labelledby="configuration-title" hidden>
+          <div class="page-heading"><div><p class="eyebrow">REVIEW BEFORE YOU DEPLOY</p><h1 id="configuration-title">Configuration, with context.</h1><p>Inspect supported settings without losing the rest of your configuration.</p></div><span class="heading-tag">Candidate files only</span></div>
+          <div class="notice notice-warning"><div><strong>Assistance, not a native parser.</strong> Detection and guided edits cover a limited subset of syslog-ng and rsyslog syntax. Includes, modules, expressions, and version-specific features may not be understood. Always review the full candidate and validate on the target host.</div></div>
+          <div class="split-layout config-layout">
+            <div class="card">
+              <div class="card-heading"><div><span class="step-label">SOURCE OF TRUTH</span><h2>Raw configuration</h2></div><div class="file-button"><input id="config-file" class="file-input" type="file" aria-label="Import a configuration file"><label for="config-file" class="button button-secondary"><svg class="icon"><use href="#icon-upload"/></svg> Import file</label></div></div>
+              <div class="card-body"><div class="editor-meta"><span id="config-filename">Paste text or import a local file</span><span>In-memory only</span></div><label class="sr-only" for="config-raw">Raw candidate configuration</label><textarea id="config-raw" class="code-editor code-editor-large" rows="25" spellcheck="false" autocomplete="off" placeholder="# Paste a syslog-ng or rsyslog configuration here"></textarea><p class="helper">Imports are text only, up to 5 MiB. Importing or sending a deployment here replaces the current candidate.</p><div class="button-row"><button id="config-inspect" type="button" class="button button-primary"><svg class="icon"><use href="#icon-search"/></svg> Detect settings</button><button id="config-download" type="button" class="button button-secondary" disabled>Download candidate</button></div></div>
+            </div>
+            <div class="stack">
+              <form id="config-settings-form" class="card">
+                <div class="card-heading"><div><span class="step-label">GUIDED EDITING</span><h2>Recognized settings</h2></div><span id="config-engine" class="badge">Not inspected</span></div>
+                <div class="card-body"><p id="config-inspection-status" class="helper" role="status">Detect settings to begin. The raw editor is always available.</p><p id="config-syntax" class="syntax-summary"></p><fieldset id="config-settings" disabled><legend class="sr-only">Supported configuration settings</legend><div id="config-settings-fields" class="settings-list"><div class="empty-state compact"><svg class="icon"><use href="#icon-sliders"/></svg><h3>Keep the whole picture.</h3><p>Supported values appear here after inspection. Unrecognized text is preserved by guided edits.</p></div></div></fieldset><ul id="config-warnings" class="notes-list"></ul></div>
+                <div class="card-footer"><button id="config-apply" type="submit" class="button button-primary" disabled>Apply supported changes</button></div>
+              </form>
+              <div class="card validation-card"><div class="card-heading"><h2>Validate natively</h2><svg class="icon"><use href="#icon-terminal"/></svg></div><div class="card-body"><p>Save your candidate as <code>candidate.conf</code>. Run the command for your installed engine on a Linux host, then resolve any native diagnostics before deployment.</p><label for="config-validation">Native validation commands</label><textarea id="config-validation" class="code-editor code-editor-short" rows="4" readonly spellcheck="false">syslog-ng --syntax-only --cfgfile candidate.conf
+rsyslogd -N1 -f candidate.conf</textarea><p class="helper">Detection is not a guarantee of valid or universally supported native syntax. No commands are executed here.</p></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="explorer" class="view" aria-labelledby="explorer-title" hidden>
+          <div class="page-heading"><div><p class="eyebrow">LESS NOISE. MORE SIGNAL.</p><h1 id="explorer-title">Find the story in your logs.</h1><p>Search local syslog and JSON events, compare sources, and export what matters.</p></div><button id="load-demo" class="button button-secondary" type="button">Explore sample logs <svg class="icon"><use href="#icon-arrow"/></svg></button></div>
+          <div class="explorer-summary">
+            <div class="metric"><span>Events in memory</span><strong id="event-count">0</strong><small>100,000 event limit</small></div><div class="metric"><span>Imported sources</span><strong id="file-count">0</strong><small>Multiple files supported</small></div><div class="metric"><span>Source bytes loaded</span><strong id="byte-count">0 B</strong><small>50 MiB combined input limit</small></div><div class="metric metric-note"><svg class="icon"><use href="#icon-lock"/></svg><strong>Private by default</strong><small>No upload, persistence, or live tail. Decompress gzip files before importing.</small></div>
+          </div>
+          <div id="log-drop-zone" class="drop-zone">
+            <span class="drop-icon"><svg class="icon"><use href="#icon-upload"/></svg></span><div class="drop-copy"><strong>Drop log files into your workspace</strong><p>UTF-8 plain-text syslog or JSON lines, including extensionless files. Maximum 1 MiB per line. New imports append to this session.</p></div><div class="file-button"><input id="log-files" class="file-input" type="file" multiple aria-label="Choose one or more local log files"><label for="log-files" class="button button-primary">Choose files</label></div>
+          </div>
+          <div id="load-progress-panel" class="load-progress" hidden><div><span id="load-progress-text" role="status">Preparing import...</span><progress id="load-progress" max="100" value="0" aria-label="Log import progress"></progress></div><button id="load-cancel" type="button" class="button button-secondary">Cancel import</button></div>
+          <div id="load-notice" class="notice" role="status" hidden></div>
+          <div class="card query-card">
+            <div class="card-heading"><h2>Query workspace</h2><div class="query-actions"><button id="logs-clear" type="button" class="button button-ghost" disabled>Clear logs</button><span class="badge">Read-only investigation</span></div></div>
+            <div class="card-body">
+              <form id="query-form"><div class="query-input-row"><div class="field query-field"><label for="log-query">Search and transform events</label><div class="query-input-wrap"><svg class="icon"><use href="#icon-search"/></svg><input id="log-query" type="text" autocomplete="off" spellcheck="false" placeholder='severity_code&lt;=4 | stats count by host' aria-describedby="query-help query-error"></div></div><div class="field source-field"><label for="log-file-filter">Source file</label><select id="log-file-filter"><option value="">All sources</option></select></div><button id="query-run" class="button button-primary" type="submit">Run query</button></div></form>
+              <div id="query-error" class="inline-error" role="alert" hidden></div>
+              <div class="query-examples"><span>Try a query</span><button type="button" class="query-chip" data-query="severity_code&lt;=4">Warnings &amp; errors</button><button type="button" class="query-chip" data-query='("failed login" OR "Failed password")'>Failed sign-ins</button><button type="button" class="query-chip" data-query="* | stats count by host">Events by host</button><button type="button" class="query-chip" data-query="* | top 5 app">Top applications</button></div>
+              <details id="query-help" class="query-help"><summary>Query language reference</summary><div class="help-grid"><div><h3>Filter</h3><p>Free text, <code>"quoted phrases"</code>, <code>field=value</code>, or <code>field!=value</code>. Numeric comparisons use <code>&gt; &gt;= &lt; &lt;=</code>; severity names also support ordering, such as <code>severity&lt;=warning</code>. Timestamps support equality and wildcard matching, not ordering comparisons. Wildcards: <code>* ?</code>. Terms use implicit AND; combine with <code>AND OR NOT</code> and parentheses. An empty query includes every event.</p><p><code>app=sshd AND NOT host=lab-*</code></p></div><div><h3>Transform with pipes</h3><p><code>stats count [by field,...]</code><br><code>top [N] field</code><br><code>sort [-]field</code><br><code>head N</code><br><code>fields field,...</code></p><p>Common fields: timestamp, host, app, facility, facility_code, severity, severity_code, message, file, line, format. Extra scalar JSON fields may also be available. No JavaScript or arbitrary regular expressions.</p></div></div></details>
+            </div>
+          </div>
+          <div class="card results-card">
+            <div class="card-heading"><div><h2>Results <span id="result-count" class="count-pill">0</span></h2><p id="result-summary" class="helper" role="status">Import files or load the sample to start exploring.</p></div><div class="button-row no-margin"><button id="results-csv" type="button" class="button button-secondary" disabled><svg class="icon"><use href="#icon-download"/></svg> CSV</button><button id="results-json" type="button" class="button button-secondary" disabled>JSON</button></div></div>
+            <div id="results-empty" class="empty-state"><span class="empty-icon"><svg class="icon"><use href="#icon-search"/></svg></span><h3>Your next insight starts here.</h3><p>Add local logs or explore the curated sample. Events never leave your browser.</p></div>
+            <div id="results-table-wrap" class="table-scroll" tabindex="0" role="region" aria-label="Query results, horizontally scrollable" hidden><table id="results-table"><caption class="sr-only">Query result rows. Use View to inspect all fields and raw event text.</caption><thead id="results-head"></thead><tbody id="results-body"></tbody></table></div>
+            <div class="pagination"><span id="page-summary">100 rows per page</span><div class="button-row no-margin"><button id="page-prev" class="button button-secondary" type="button" disabled>Previous</button><button id="page-next" class="button button-secondary" type="button" disabled>Next</button></div></div>
+          </div>
+          <p class="footnote">Limits apply across all imports: 50 MiB of source data and 100,000 events. Decoding is incremental, but parsed objects use additional memory. At a limit, loading stops visibly and keeps completed events. Exports include all current result rows, not just the visible page. CSV cells beginning with spreadsheet formula characters are prefixed with an apostrophe.</p>
+        </section>
+
+        <section id="detections" class="view" aria-labelledby="detections-title" hidden>
+          <div class="page-heading"><div><p class="eyebrow">TURN PATTERNS INTO SIGNALS</p><h1 id="detections-title">Watch for what matters.</h1><p>Build literal-phrase swatchdog rules and preview matches against your loaded events.</p></div><span class="heading-tag">Echo alerts only</span></div>
+          <div class="split-layout">
+            <form id="detection-form" class="card">
+              <div class="card-heading"><div><span class="step-label">RULE BUILDER</span><h2>Detection phrases</h2></div></div>
+              <div class="card-body"><p id="preset-label" class="field-label">Start from a preset</p><div class="preset-grid" role="group" aria-labelledby="preset-label"><button type="button" class="preset-button" data-preset="login"><svg class="icon"><use href="#icon-lock"/></svg>Failed login</button><button type="button" class="preset-button" data-preset="firewall"><svg class="icon"><use href="#icon-shield"/></svg>Firewall deny</button><button type="button" class="preset-button" data-preset="privilege"><svg class="icon"><use href="#icon-terminal"/></svg>Privilege escalation</button></div><div class="field"><label for="detection-patterns">Literal phrases <span class="label-hint">one per line</span></label><textarea id="detection-patterns" rows="7" spellcheck="false" autocomplete="off" required>Failed password
+failed login
+authentication failure</textarea><small>Empty lines are ignored. Presets replace the phrase list. Characters are escaped for Perl regex in generated rules.</small></div><div class="field-grid"><div class="field"><label for="detection-throttle">Throttle (seconds)</label><input id="detection-throttle" type="number" value="60" min="0" max="86400" required><small>0 disables throttling.</small></div><div class="field checkbox-field"><label for="detection-ignore-case"><input id="detection-ignore-case" type="checkbox" checked> Ignore case</label><small>Applies to generated rules and preview.</small></div></div><div class="notice notice-subtle"><div><strong>Safe preview, literal matching.</strong> The browser checks raw event strings only. It never evaluates regular expressions, Perl, or alert actions. Counts do not simulate throttling.</div></div></div>
+              <div class="card-footer"><button type="submit" class="button button-primary">Generate swatch config</button><button id="detection-preview" type="button" class="button button-secondary">Preview matches</button></div>
+            </form>
+            <div class="stack"><div class="card"><div class="card-heading"><h2>Swatch configuration</h2><span id="detection-state" class="badge">Not generated</span></div><div class="card-body"><label for="detection-output">swatchrc <span class="label-hint">editable</span></label><textarea id="detection-output" class="code-editor" rows="13" spellcheck="false" autocomplete="off" placeholder="Generate literal-phrase echo alerts here."></textarea><button id="detection-download" type="button" class="button button-secondary" disabled><svg class="icon"><use href="#icon-download"/></svg> Download swatchrc</button><label for="detection-command" class="spaced-label">Run on your host</label><textarea id="detection-command" class="code-editor code-editor-short" rows="3" readonly spellcheck="false">swatchdog --config-file=swatchrc --tail-file=/var/log/remote/network.log</textarea><p class="helper">Requires swatchdog (swatch) and Perl installed on your host. Generated rules emit echo alerts only. You may manually edit the file for advanced Perl regex or actions; nothing is executed in this browser.</p></div></div><div class="card"><div class="card-heading"><h2>Match preview</h2><span id="detection-event-count" class="badge">0 loaded events</span></div><div class="card-body"><p id="detection-preview-summary" class="helper" role="status">Load logs in the explorer, then preview your phrases here.</p><div id="detection-preview-results" class="preview-results"></div></div></div></div>
+          </div>
+        </section>
+
+        <section id="maintenance" class="view" aria-labelledby="maintenance-title" hidden>
+          <div class="page-heading"><div><p class="eyebrow">KEEP HISTORY. CONTROL GROWTH.</p><h1 id="maintenance-title">Give your logs a lifecycle.</h1><p>Prepare native log rotation and a non-destructive archive of rotated files.</p></div><span class="heading-tag">Review before scheduling</span></div>
+          <div class="notice"><svg class="icon"><use href="#icon-archive"/></svg><div><strong>Archives copy rotated logs only.</strong> Active logs are excluded and the backup script does not delete source files. Logrotate enforces the rotation policy, which can remove old rotations after the configured count. Review both artifacts before using them.</div></div>
+          <div class="split-layout">
+            <form id="maintenance-form" class="card">
+              <div class="card-heading"><div><span class="step-label">RETENTION POLICY</span><h2>Rotation &amp; archive settings</h2></div></div>
+              <div class="card-body"><div class="field"><label for="maintenance-log-path">Active log file</label><input id="maintenance-log-path" name="logPath" value="/var/log/remote/network.log" type="text" autocomplete="off" spellcheck="false" required></div><div class="field"><label for="maintenance-archive-dir">Archive directory</label><input id="maintenance-archive-dir" name="archiveDir" value="/var/backups/logops" type="text" autocomplete="off" spellcheck="false" required></div><div class="field-grid"><div class="field"><label for="maintenance-rotate">Rotations to retain</label><input id="maintenance-rotate" name="rotate" type="number" min="1" max="3650" value="14" required><small>A file count, not a guarantee of days.</small></div><div class="field"><label for="maintenance-frequency">Rotation frequency</label><select id="maintenance-frequency" name="frequency"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></div><div class="field"><label for="maintenance-max-size">Maximum size</label><input id="maintenance-max-size" name="maxSize" type="text" value="100M" autocomplete="off" spellcheck="false" required><small>Native size value, such as 100M or 1G.</small></div><div class="field"><label for="maintenance-compression">Compression</label><select id="maintenance-compression" name="compression"><option value="gzip">gzip</option><option value="compress">compress (ncompress)</option><option value="none">None</option></select></div><div class="field"><label for="maintenance-engine">Service to reopen logs</label><select id="maintenance-engine" name="engine"><option value="syslog-ng">syslog-ng</option><option value="rsyslog">rsyslog</option></select></div></div><p class="helper">Native Linux tooling only. Install logrotate, Bash, the selected compression tools, and all commands required by the generated scripts. Size is checked when logrotate runs, not continuously.</p></div>
+              <div class="card-footer"><button type="submit" class="button button-primary">Generate maintenance files <svg class="icon"><use href="#icon-arrow"/></svg></button></div>
+            </form>
+            <div class="stack"><div class="card"><div class="card-heading"><h2>Logrotate policy</h2><span id="maintenance-state" class="badge">Not generated</span></div><div class="card-body"><label for="maintenance-logrotate">logops.logrotate <span class="label-hint">editable</span></label><textarea id="maintenance-logrotate" class="code-editor" rows="12" spellcheck="false" autocomplete="off" placeholder="Your native rotation policy will appear here."></textarea><button id="maintenance-logrotate-download" type="button" class="button button-secondary" disabled><svg class="icon"><use href="#icon-download"/></svg> Download logrotate policy</button></div></div><div class="card"><div class="card-heading"><h2>Rotated-log backup</h2><span class="badge">No source deletion</span></div><div class="card-body"><label for="maintenance-backup">logops-backup.sh <span class="label-hint">editable</span></label><textarea id="maintenance-backup" class="code-editor" rows="12" spellcheck="false" autocomplete="off" placeholder="Your Bash archive script will appear here."></textarea><button id="maintenance-backup-download" type="button" class="button button-secondary" disabled><svg class="icon"><use href="#icon-download"/></svg> Download backup script</button><ul id="maintenance-notes" class="notes-list"></ul><p class="helper">These are downloadable artifacts, not scheduled jobs. This page never rotates, compresses, archives, or removes files on your machine.</p></div></div></div>
+          </div>
+        </section>
+        <footer class="workspace-footer"><span>LogOps / Built for thoughtful operations</span><span>Local files. Explicit exports. No background connections.</span></footer>
+      </main>
+    </div>
+  </div>
+  <dialog id="row-dialog" aria-labelledby="row-dialog-title"><div class="dialog-heading"><div><p class="eyebrow">EVENT INSPECTOR</p><h2 id="row-dialog-title">Event details</h2></div><button id="row-dialog-close" type="button" class="button button-icon" aria-label="Close event details"><svg class="icon"><use href="#icon-close"/></svg></button></div><div class="dialog-body"><dl id="row-fields" class="row-fields"></dl><label for="row-raw">Raw event</label><textarea id="row-raw" class="code-editor" rows="9" readonly spellcheck="false"></textarea></div></dialog>
+  <div id="toast-region" class="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+  <script>/* LOGOPS_CORE */</script>
+  <script>/* LOGOPS_APP */</script>
+</body>
+</html>
